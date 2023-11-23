@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="bk_operator_framework",
-    version="0.4.3",
+    version="0.4.5",
     packages=find_packages(include=["bk_operator_framework", "bk_operator_framework.*"]),
     include_package_data=True,
     python_requires=">=3.6",

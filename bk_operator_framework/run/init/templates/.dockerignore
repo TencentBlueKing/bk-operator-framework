@@ -17,3 +17,4 @@ README.md
 pyproject.toml
 bk_operator_framework/
 MANIFEST.in
+local_debug.py

@@ -3,3 +3,4 @@ __pycache__/
 *.egg-info/
 dist/
 .cert/
+local_debug.py

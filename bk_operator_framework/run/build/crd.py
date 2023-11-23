@@ -49,9 +49,11 @@ def extract_print_columns(d, parent_dict_path, print_columns=None):
                 _print = {
                     "name": d.get("print_column__name") or name,
                     "type": d.get("type"),
-                    "priority": d.get("print_column__priority", 0),
                     "jsonPath": parent_dict_path.replace(".properties", ""),
                 }
+                if d.get("print_column__priority"):
+                    _print["priority"] = d.get("print_column__priority")
+
                 if d.get("description"):
                     _print["description"] = d.get("description")
 
