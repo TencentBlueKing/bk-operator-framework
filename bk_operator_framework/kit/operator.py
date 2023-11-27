@@ -50,12 +50,16 @@ class Operator(metaclass=OperatorMeta):
     class Error(Exception):
         pass
 
-    def request_handler(self, cr_name):
+    def request_handler(self, cr_name, cr_namespace=None):
         """
         在CR依赖的其他资源发生变化时请求一个CR处理函数
         :param cr_name:
+        :param cr_namespace
         :return:
         """
+        if cr_namespace is None:
+            cr_namespace = k8s_utils.get_current_namespace()
+
         cr_kwargs = {
             "group": self.Meta.group,
             "version": self.Meta.version,
@@ -67,14 +71,17 @@ class Operator(metaclass=OperatorMeta):
             k8s_utils.patch_cluster_cr_annotations(**cr_kwargs)
 
         if self.Meta.scope == K8sResourceScope.Namespaced:
-            cr_kwargs.update({"namespace": k8s_utils.get_current_namespace()})
+            cr_kwargs.update({"namespace": cr_namespace})
             k8s_utils.patch_namespaced_cr_annotations(**cr_kwargs)
 
-    def update_status(self):
+    def update_status(self, cr_namespace=None):
         """
         更新 Operator 定义的 CR Status
         :return:
         """
+        if cr_namespace is None:
+            cr_namespace = self.namespace
+
         cr_kwargs = {
             "group": self.Meta.group,
             "version": self.Meta.version,
@@ -86,7 +93,7 @@ class Operator(metaclass=OperatorMeta):
             k8s_utils.patch_cluster_cr_status(**cr_kwargs)
 
         if self.Meta.scope == K8sResourceScope.Namespaced:
-            cr_kwargs.update({"namespace": k8s_utils.get_current_namespace()})
+            cr_kwargs.update({"namespace": cr_namespace})
             k8s_utils.patch_namespaced_cr_status(**cr_kwargs)
 
     @handler(HandlerType.Startup)
