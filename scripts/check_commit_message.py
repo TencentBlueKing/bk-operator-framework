@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 校验提交信息是否包含规范的前缀
 """
-from __future__ import absolute_import, print_function, unicode_literals
 
 import sys
 
@@ -33,7 +31,7 @@ def get_commit_message():
         print("Warning: The path of file `COMMIT_EDITMSG` not given, skipped!")
         return 0
     commit_message_filepath = args[1]
-    with open(commit_message_filepath, "r") as fd:
+    with open(commit_message_filepath) as fd:
         content = fd.read()
     return content.strip().lower()
 

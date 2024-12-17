@@ -1,4 +1,0 @@
-# -*- coding: utf-8 -*-
-# DO NOT DELETE ANY PACKAGE IN base SECTION !!!
-bk_operator_framework<=1.0.0
-# add your custom requirements below this line
