@@ -3,8 +3,11 @@ import shutil
 
 import click
 
+from bk_operator_framework._cli_actions.constant import CliText
+
 
 def main():
+    click.echo(f"{CliText.INFO} Initializing project structure...")
     template_dir = os.path.join(os.path.dirname(__file__), "templates", "init")
     current_dir = os.getcwd()
 
@@ -12,9 +15,7 @@ def main():
     internal_dir = os.path.join(current_dir, "internal")
 
     if os.path.exists(api_dir) and os.path.exists(internal_dir):
-        fata_text = click.style("FATA", fg="red")
-        error_message = f"{fata_text} Failed to initialize project: already initialized"
-        click.echo(error_message)
+        click.echo(f"{CliText.FATA} Failed to initialize project: already initialized")
         return
 
     for root, dirs, files in os.walk(template_dir):
@@ -24,5 +25,6 @@ def main():
             os.makedirs(os.path.dirname(dst_file), exist_ok=True)
             shutil.copy2(src_file, dst_file)
 
-    success_text = click.style("INFO", fg="green")
-    click.echo(f"{success_text} Project initialization completed!")
+    click.echo(f"{CliText.INFO} Project initialization completed!")
+    click.echo(f"{CliText.INFO} Update dependencies:\n$ pip install -r requirements.txt")
+    click.echo(f"{CliText.INFO} Next: define a resource with:\n$ bof create api")
