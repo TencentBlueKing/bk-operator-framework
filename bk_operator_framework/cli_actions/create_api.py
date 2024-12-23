@@ -3,7 +3,7 @@ from bk_operator_framework.core import template
 from bk_operator_framework.core.project import project_desc
 
 
-def main(group, version, kind, plural, namespaced, controller, resource, force):
+def main(group, version, kind, plural, namespaced, controller, resource):
     singular = kind.lower()
     if not plural:
         plural = f"{singular}s"
@@ -16,3 +16,6 @@ def main(group, version, kind, plural, namespaced, controller, resource, force):
 
     if controller:
         template.create_controller(group, version, kind, singular, plural)
+
+    if resource or controller:
+        project_desc.create_or_update_resource(group, version, kind, plural, resource, controller, namespaced)

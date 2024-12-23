@@ -42,7 +42,7 @@ def create():
 @click.option("--version", type=str, required=True, help="Resource Version")
 @click.option("--kind", type=str, required=True, help="Resource Kind")
 @click.option("--plural", type=str, help="resource irregular plural form")
-@click.option("--namespaced", is_flag=True, default=True, help="Resource is namespaced (default true)")
+@click.option("--namespaced", type=bool, default=True, help="Resource is namespaced (default true)")
 @click.option(
     "--resource",
     is_flag=True,
@@ -55,9 +55,8 @@ def create():
     prompt=f"{CliText.INFO} Create Controller",
     help="if set, generate the controller without prompting the user (default true)",
 )
-@click.option("--force", is_flag=True, help="attempt to create resource even if it already exists")
-def api(group, version, kind, plural, namespaced, controller, resource, force):
-    cli_actions_create_api.main(group, version, kind, plural, namespaced, controller, resource, force)
+def api(group, version, kind, plural, namespaced, controller, resource):
+    cli_actions_create_api.main(group, version, kind, plural, namespaced, controller, resource)
 
 
 @create.command(help="Scaffold a webhook for an API resource")

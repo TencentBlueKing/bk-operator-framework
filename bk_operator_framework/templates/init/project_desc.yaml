@@ -1,2 +1,20 @@
 project_name: {{ project_name }}
 domain: {{ domain }}
+{% if resources -%}
+resources:
+{%- for resource in resources %}
+- {% if not resource.api -%}
+  api: null
+  {%- else -%}
+  api:
+    crdVersion: {{ resource.api.crdVersion }}
+    namespaced: {{ 'true' if resource.api.namespaced else 'false' }}
+  {%- endif %}
+  controller: {{ 'true' if resource.controller else 'false' }}
+  domain: {{ resource.domain }}
+  group: {{ resource.group }}
+  kind: {{ resource.kind }}
+  plural: {{ resource.plural }}
+  version: {{ resource.version }}
+{%- endfor %}
+{% endif %}
