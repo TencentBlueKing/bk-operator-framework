@@ -1,3 +1,4 @@
+import logging
 import os
 import pkgutil
 import sys
@@ -5,6 +6,15 @@ import typing
 from importlib import import_module
 
 from kubernetes import config
+
+logger = logging.getLogger("bof.core.runtime")
+logger.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("[%(asctime)s] %(name)-20.20s [%(levelname)-8.8s] %(message)s")
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
 
 def _list_all_modules(module_dir: str, sub_dir: str = None) -> typing.List[str]:
@@ -27,7 +37,7 @@ def discover_controllers(module):
     for name in modules:
         module_path = "{}.{}".format(module.__name__, name)
         import_module(module_path)
-        print(module_path)
+        logger.info(f"Discovered {module_path}")
 
 
 def load_kube_config():
