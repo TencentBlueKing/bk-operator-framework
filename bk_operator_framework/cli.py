@@ -1,7 +1,12 @@
 import click
 
-from bk_operator_framework._cli_actions import init as cli_actions_init
-from bk_operator_framework._cli_actions import version as cli_actions_version
+from bk_operator_framework.cli_actions import create_api as cli_actions_create_api
+from bk_operator_framework.cli_actions import (
+    create_webhook as cli_actions_create_webhook,
+)
+from bk_operator_framework.cli_actions import init as cli_actions_init
+from bk_operator_framework.cli_actions import version as cli_actions_version
+from bk_operator_framework.cli_actions.echo import CliText
 
 
 @click.group(name="bof", epilog='Use "bof [command] --help" for more information about a command.')
@@ -11,27 +16,53 @@ def bof() -> None:
 
 
 @bof.command()
-def init():
-    """Initialize a new bof project."""
-    cli_actions_init.main()
-
-
-@bof.command()
-def create():
-    """Create a new bof component."""
-    click.echo("Creation complete.")
-
-
-@bof.command()
-def edit():
-    """Edit the bof project configuration."""
-    click.echo("Edit complete.")
-
-
-@bof.command()
 def version():
     """Print the bof version."""
     cli_actions_version.main()
+
+
+@bof.command()
+@click.option("--domain", type=str, default="my.domain", help="Resource Group")
+def init(domain):
+    """Initialize a new bof project."""
+    cli_actions_init.main(domain)
+
+
+@bof.group(
+    help="Scaffold a Kubernetes API or webhook.",
+    epilog='Use "bof create [command] --help" for more information about a command.',
+)
+def create():
+    """Scaffold a Kubernetes API or webhook."""
+    pass
+
+
+@create.command(help="Scaffold a Kubernetes API")
+@click.option("--group", type=str, required=True, help="Resource Group")
+@click.option("--version", type=str, required=True, help="Resource Version")
+@click.option("--kind", type=str, required=True, help="Resource Kind")
+@click.option("--plural", type=str, help="resource irregular plural form")
+@click.option("--namespaced", is_flag=True, default=True, help="Resource is namespaced (default true)")
+@click.option(
+    "--resource",
+    is_flag=True,
+    prompt=f"{CliText.INFO} Create Resource",
+    help="if set, generate the resource without prompting the user (default true)",
+)
+@click.option(
+    "--controller",
+    is_flag=True,
+    prompt=f"{CliText.INFO} Create Controller",
+    help="if set, generate the controller without prompting the user (default true)",
+)
+@click.option("--force", is_flag=True, help="attempt to create resource even if it already exists")
+def api(group, version, kind, plural, namespaced, controller, resource, force):
+    cli_actions_create_api.main(group, version, kind, plural, namespaced, controller, resource, force)
+
+
+@create.command(help="Scaffold a webhook for an API resource")
+def webhook():
+    cli_actions_create_webhook.main()
 
 
 if __name__ == "__main__":
