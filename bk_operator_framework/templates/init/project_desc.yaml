@@ -1,20 +1,28 @@
-project_name: {{ project_name }}
-domain: {{ domain }}
-{% if resources -%}
+project_name: {{ project_desc.project_name }}
+domain: {{ project_desc.domain }}
+{% if project_desc.resources -%}
 resources:
-{%- for resource in resources %}
+{%- for resource in project_desc.resources %}
 - {% if not resource.api -%}
   api: null
   {%- else -%}
   api:
     crdVersion: {{ resource.api.crdVersion }}
     namespaced: {{ 'true' if resource.api.namespaced else 'false' }}
+    served: {{ 'true' if resource.api.served else 'false' }}
+    storage: {{ 'true' if resource.api.storage else 'false' }}
   {%- endif %}
   controller: {{ 'true' if resource.controller else 'false' }}
   domain: {{ resource.domain }}
-  group: {{ resource.group }}
-  kind: {{ resource.kind }}
-  plural: {{ resource.plural }}
-  version: {{ resource.version }}
+  group: {{  resource.group }}
+  kind: {{  resource.kind }}
+  plural: {{  resource.plural }}
+  singular: {{  resource.singular }}
+  version: {{  resource.version }}
 {%- endfor %}
 {% endif %}
+{%- if project_desc.chart -%}
+chart:
+  version: {{  project_desc.chart.version }}
+  appVersion: {{ project_desc.chart.appVersion }}
+{%- endif %}

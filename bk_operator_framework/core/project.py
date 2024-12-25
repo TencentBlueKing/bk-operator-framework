@@ -5,15 +5,16 @@ import yaml
 
 from bk_operator_framework.cli_actions import echo
 from bk_operator_framework.core import template
-from bk_operator_framework.core.schemas import ProjectResourceSchema
+from bk_operator_framework.core.schemas import ProjectChartSchema, ProjectResourceSchema
 
 
 class ProjectDesc:
 
     def __init__(self):
-        self.domain = ""
-        self.project_name = ""
+        self.domain = None
+        self.project_name = None
         self.resources = []
+        self.chart = None
 
         self.work_dir = os.getcwd()
         self.file_path = os.path.join(self.work_dir, "project_desc.yaml")
@@ -32,16 +33,9 @@ class ProjectDesc:
         :param domain:
         :return:
         """
-
-        kwargs = {
-            "target_relative_path": os.path.relpath(self.file_path, self.work_dir),
-            "template_relative_path": os.path.join("init", "project_desc.yaml"),
-            "render_vars": {
-                "project_name": os.path.basename(self.work_dir),
-                "domain": domain,
-            },
-        }
-        template.create_file(**kwargs)
+        self.project_name = os.path.basename(self.work_dir)
+        self.domain = domain
+        self.render()
 
     def reload(self):
         """
@@ -59,12 +53,39 @@ class ProjectDesc:
         self.project_name = data.get("project_name", "")
 
         self.resources = [ProjectResourceSchema(**r) for r in data.get("resources", [])]
+        self.chart = data.get("chart") and ProjectChartSchema(**data.get("chart"))
 
-    def create_or_update_resource(self, group, version, kind, plural, resource, controller, namespaced):
+    def render(self):
+        """
+        Render Project Info to project_desc.yaml
+        :return:
+        """
+        kwargs = {
+            "target_relative_path": os.path.relpath(self.file_path, self.work_dir),
+            "template_relative_path": os.path.join("init", "project_desc.yaml"),
+            "render_vars": {"project_desc": self},
+        }
+
+        template.create_file(**kwargs)
+
+    def create_or_update_resources(self, group, version, kind, plural, singular, resource, controller, namespaced):
+        """
+        Create Or update resources
+        :param group:
+        :param version:
+        :param kind:
+        :param plural:
+        :param singular:
+        :param resource:
+        :param controller:
+        :param namespaced:
+        :return:
+        """
         resource_info = {
             "group": group,
             "version": version,
             "kind": kind,
+            "singular": singular,
             "plural": plural,
             "controller": controller,
             "domain": self.domain,
@@ -94,17 +115,13 @@ class ProjectDesc:
         if not resource_exist:
             self.resources.append(resource)
 
-        kwargs = {
-            "target_relative_path": os.path.relpath(self.file_path, self.work_dir),
-            "template_relative_path": os.path.join("init", "project_desc.yaml"),
-            "render_vars": {
-                "project_name": os.path.basename(self.work_dir),
-                "domain": self.domain,
-                "resources": self.resources,
-            },
-        }
-
-        template.create_file(**kwargs)
+    def create_or_update_chart(self, part):
+        if not self.chart:
+            self.chart = ProjectChartSchema()
+            self.chart.bump_app_version()
+        else:
+            self.chart.bump_version(part)
+            self.chart.bump_app_version()
 
 
 project_desc = ProjectDesc()

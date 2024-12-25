@@ -1,5 +1,6 @@
 import click
 
+from bk_operator_framework.cli_actions import chart as cli_actions_chart
 from bk_operator_framework.cli_actions import create_api as cli_actions_create_api
 from bk_operator_framework.cli_actions import (
     create_webhook as cli_actions_create_webhook,
@@ -62,6 +63,18 @@ def api(group, version, kind, plural, namespaced, controller, resource):
 @create.command(help="Scaffold a webhook for an API resource")
 def webhook():
     cli_actions_create_webhook.main()
+
+
+@bof.command()
+@click.option(
+    "--part",
+    type=click.Choice(["major", "minor", "patch"]),
+    help="Helm Chart Semantic Versioning Part",
+    default="patch",
+)
+def chart(part):
+    """Generate helm chart for the project."""
+    cli_actions_chart.main(part)
 
 
 if __name__ == "__main__":

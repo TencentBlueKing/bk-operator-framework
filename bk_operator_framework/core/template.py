@@ -3,6 +3,8 @@ import shutil
 import sys
 
 from jinja2 import Environment, FileSystemLoader
+from ruamel.yaml import YAML
+from ruamel.yaml.scalarstring import DoubleQuotedScalarString
 
 from bk_operator_framework.cli_actions import echo
 
@@ -94,3 +96,75 @@ def create_controller(group, version, kind, singular, plural):
     create_file(**resource_controller_kwargs)
 
     return controller_dir
+
+
+def create_or_update_chart_basic_file(project_name, chart_version, chart_app_version):
+    chart_dir = os.path.join(WORK_DIR, "chart")
+    os.makedirs(chart_dir, exist_ok=True)
+
+    helm_ignore_path = os.path.join(WORK_DIR, "chart", ".helmignore")
+    if not os.path.exists(helm_ignore_path):
+        echo.info("chart/.helmignore")
+        helm_ignore_path_kwargs = {
+            "target_relative_path": os.path.relpath(helm_ignore_path, os.getcwd()),
+            "template_relative_path": os.path.join("chart", ".helmignore"),
+            "render_vars": {},
+        }
+        create_file(**helm_ignore_path_kwargs)
+
+    chart_yaml_path = os.path.join(WORK_DIR, "chart", "Chart.yaml")
+    echo.info("chart/Chart.yaml")
+    if not os.path.exists(chart_yaml_path):
+        chart_yaml_kwargs = {
+            "target_relative_path": os.path.relpath(chart_yaml_path, os.getcwd()),
+            "template_relative_path": os.path.join("chart", "Chart.yaml"),
+            "render_vars": {"project_name": project_name, "version": chart_version, "appVersion": chart_app_version},
+        }
+        create_file(**chart_yaml_kwargs)
+    else:
+        yaml = YAML()
+
+        with open(chart_yaml_path) as file:
+            data = yaml.load(file)
+
+        data["version"] = chart_version
+        data["appVersion"] = DoubleQuotedScalarString(chart_app_version)
+
+        with open(chart_yaml_path, "w") as file:
+            yaml.dump(data, file)
+
+    return chart_dir
+
+
+def create_or_update_chart_crds(resource_versions):
+    crds_dir = os.path.join(WORK_DIR, "chart", "crds")
+    os.makedirs(crds_dir, exist_ok=True)
+
+    _resource = resource_versions[-1]["resource"]
+
+    meta = {
+        "crdVersion": _resource.api.crdVersion,
+        "name": f"{_resource.plural}.{_resource.group}.{_resource.domain}",
+        "group": f"{_resource.group}.{_resource.domain}",
+        "namespaced": _resource.api.namespaced,
+        "plural": _resource.plural,
+        "singular": _resource.singular,
+        "kind": _resource.kind,
+    }
+    crd_yaml_path = os.path.join(crds_dir, f'{meta["name"]}.yaml')
+    target_relative_path = os.path.relpath(crd_yaml_path, os.getcwd())
+    echo.info(target_relative_path)
+    chart_yaml_kwargs = {
+        "target_relative_path": os.path.relpath(crd_yaml_path, os.getcwd()),
+        "template_relative_path": os.path.join("chart", "crds", "crd.yaml"),
+        "render_vars": {"meta": meta, "resource_versions": resource_versions},
+    }
+    create_file(**chart_yaml_kwargs)
+
+    yaml = YAML()
+    with open(crd_yaml_path) as file:
+        data = yaml.load(file)
+    for index, version in enumerate(data["spec"]["versions"]):
+        version["schema"]["openAPIV3Schema"] = resource_versions[index]["openapi_v3_schema"]
+    with open(crd_yaml_path, "w") as file:
+        yaml.dump(data, file)
