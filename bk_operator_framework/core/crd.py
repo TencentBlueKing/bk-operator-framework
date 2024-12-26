@@ -19,7 +19,6 @@ CRD_SCHEMA_NOT_ALLOW_SET_FIELD_LIST = [
 
 def schema_validate(properties):
     title = properties.get("title", [])
-    print(properties)
     if "uniqueItems" in properties and properties["uniqueItems"] is True:
         echo.fata(f"The field[{title}] uniqueItems cannot be set to true.")
         sys.exit(1)
