@@ -24,17 +24,17 @@ spec:
     additionalPrinterColumns:
 {%- endif -%}
 {% for apc in rv.additional_printer_columns %}
-      - name: {{ apc.name }}
-        type: {{ apc.type }}
-        jsonPath:  {{ apc.jsonPath }}
+      - name: "{{ apc.name }}"
+        type: "{{ apc.type }}"
+        jsonPath:  "{{ apc.jsonPath }}"
         {%- if apc.description %}
-        description: {{ apc.description }}
+        description: "{{ apc.description }}"
         {%- endif %}
         {%- if apc.priority %}
         priority: {{ apc.priority }}
         {%- endif %}
         {%- if apc.format %}
-        format: {{ apc.format }}
+        format: "{{ apc.format }}"
         {%- endif %}
 {%- endfor %}
 {%- endfor %}
