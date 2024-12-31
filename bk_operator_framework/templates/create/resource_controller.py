@@ -16,8 +16,17 @@ ServiceAccountClusterRoleRuleList: list[ClusterRoleRuleSchema] = [
 
 
 @kopf.on.event(group=GroupVersion.group, version=GroupVersion.version, plural={{ kind }}Plural)
-async def reconcile(spec, **kwargs):
-    spec_obj = {{ kind }}Spec(**spec)
-    print(f"Hello, {spec_obj.foo}")
+async def reconcile(spec, status, type, patch, logger, **kwargs):
+    """
+    Reconcile is part of the main kubernetes reconciliation loop which aims to
+    move the current state of the cluster closer to the desired state.
+    TODO(user): Modify the Reconcile function to compare the state specified by
+    the {{ kind }} object against the actual cluster state, and then
+    perform operations to make the cluster state reflect the state specified by the user.
+    """
+    logger.info(f"Received {type} event, spec -> {spec}, status -> {status}.")
 
-    return {{ kind }}Status().model_dump()
+    # TODO(user): your logic here
+
+    # set the observed state of {{ kind }} object
+    patch.setdefault("status", {}).update({{ kind }}Status(phase="Succeeded").model_dump())

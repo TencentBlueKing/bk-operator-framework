@@ -15,9 +15,9 @@ class {{ kind }}Spec(BaseModel):
 
 class {{ kind }}Status(BaseModel):
     """
-    {{ kind }}Status defines the desired state of {{ kind }}.
+    {{ kind }}Status defines the observed state of  {{ kind }}.
     """
-    pass
+    phase: str = Field(description="Phase is an example field of {{ kind }}. Edit {{ singular }}_schemas.py to remove/update")
 
 
 class {{ kind }}(BaseModel):
