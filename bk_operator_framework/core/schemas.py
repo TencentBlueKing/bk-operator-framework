@@ -13,7 +13,7 @@ class GroupVersionSchema(BaseModel):
         return f"GroupVersion -> {self.group}/{self.version}"
 
 
-class AdditionalPrinterColumn(BaseModel):
+class AdditionalPrinterColumnSchema(BaseModel):
     name: str = Field(description="A human readable name for the column")
     type: str = Field(description="An OpenAPI type definition for this column")
     jsonPath: str = Field(
@@ -28,6 +28,32 @@ class AdditionalPrinterColumn(BaseModel):
     format: str = Field(
         description="format is an optional OpenAPI type definition for this column."
         "The 'name' format is applied to the primary identifier column to assist in clients identifying column is the resource name",
+        default=None,
+    )
+
+
+class ClusterRoleRuleSchema(BaseModel):
+    apiGroups: list[str] = Field(
+        description="APIGroups is the name of the APIGroup that contains the resources."
+        "If multiple API groups are specified, any action requested against one of the enumerated resources in any API group will be allowed."
+        " '' represents the core API group and ' * ' represents all API groups."
+    )
+    resources: list[str] = Field(
+        description="Resources is a list of resources this rule applies to. '*' represents all resources."
+    )
+    verbs: list[str] = Field(
+        description="Verbs is a list of Verbs that apply to ALL the ResourceKinds contained in this rule. '*' represents all verbs."
+    )
+
+    resourceNames: list[str] = Field(
+        description="ResourceNames is an optional white list of names that the rule applies to. An empty set means that everything is allowed.",
+        default=None,
+    )
+    nonResourceURLs: list[str] = Field(
+        description="NonResourceURLs is a set of partial urls that a user should have access to. *s are allowed"
+        "but only as the full, final step in the path Since non-resource URLs are not namespaced,"
+        "this field is only applicable for ClusterRoles referenced from a ClusterRoleBinding."
+        "Rules can either apply to API resources (such as 'pods' or 'secrets') or non-resource URL paths (such as '/api'), but not both.",
         default=None,
     )
 

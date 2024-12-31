@@ -33,7 +33,7 @@ class ProjectDesc:
         :param domain:
         :return:
         """
-        self.project_name = os.path.basename(self.work_dir)
+        self.project_name = os.path.basename(self.work_dir).lower().replace("_", "-")
         self.domain = domain
         self.render()
 

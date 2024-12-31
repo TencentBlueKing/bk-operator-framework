@@ -1,0 +1,18 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ "{{" }} include "bof_tmp_project.fullname" . {{ "}}" }}-clusterrole
+  labels:
+    {{ "{{" }}- include "bof_tmp_project.labels" . | nindent 4 {{ "}}" }}
+rules:
+{%- for rule in cluster_role_rule_list %}
+  - apiGroups: {{ rule.apiGroups | tojson }}
+    resources: {{ rule.resources | tojson }}
+    verbs: {{ rule.verbs | tojson  }}
+    {%- if rule.resourceNames %}
+    resourceNames: {{ rule.resourceNames | tojson  }}
+    {%- endif %}
+    {%- if rule.nonResourceURLs %}
+    nonResourceURLs: {{ rule.nonResourceURLs | tojson  }}
+    {%- endif %}
+{%- endfor %}

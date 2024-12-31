@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import sys
@@ -12,6 +13,10 @@ TEMPLATE_ROOT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "te
 WORK_DIR = os.getcwd()
 
 
+def tojson(value):
+    return json.dumps(value)
+
+
 def init_project_dir():
     init_template_dir = os.path.join(TEMPLATE_ROOT_DIR, "init")
     for root, dirs, files in os.walk(init_template_dir):
@@ -22,10 +27,18 @@ def init_project_dir():
             shutil.copy2(src_file, dst_file)
 
 
-def create_file(target_relative_path, template_relative_path, render_vars):
-    env = Environment(loader=FileSystemLoader(TEMPLATE_ROOT_DIR))
-    template = env.get_template(template_relative_path)
-    rendered_content = template.render(**render_vars)
+def create_file(target_relative_path, template_relative_path, render_vars=None, replace_keyword=None):
+    if replace_keyword:
+        template_file_path = os.path.join(TEMPLATE_ROOT_DIR, template_relative_path)
+        with open(template_file_path, encoding="utf-8") as file:
+            rendered_content = file.read()
+        for k, v in replace_keyword.items():
+            rendered_content = rendered_content.replace(k, v)
+    else:
+        env = Environment(loader=FileSystemLoader(TEMPLATE_ROOT_DIR))
+        env.filters["tojson"] = tojson
+        template = env.get_template(template_relative_path)
+        rendered_content = template.render(**render_vars)
     target_file = os.path.join(WORK_DIR, target_relative_path)
     with open(target_file, "w", encoding="utf-8") as file:
         file.write(rendered_content)
@@ -47,7 +60,7 @@ def create_resource(group, version, kind, singular, plural, domain):
     group_version_file_path = os.path.join(resource_dir, "group_version.py")
     if not os.path.exists(group_version_file_path):
         group_version_kwargs = {
-            "target_relative_path": os.path.relpath(group_version_file_path, os.getcwd()),
+            "target_relative_path": os.path.relpath(group_version_file_path, WORK_DIR),
             "template_relative_path": os.path.join("create", "group_version.py"),
             "render_vars": {"group": f"{group}.{domain}", "version": version},
         }
@@ -59,7 +72,7 @@ def create_resource(group, version, kind, singular, plural, domain):
         sys.exit(1)
 
     resource_schemas_kwargs = {
-        "target_relative_path": os.path.relpath(resource_schemas_path, os.getcwd()),
+        "target_relative_path": os.path.relpath(resource_schemas_path, WORK_DIR),
         "template_relative_path": os.path.join("create", "resource_schemas.py"),
         "render_vars": {"kind": kind, "plural": plural, "singular": singular},
     }
@@ -83,7 +96,7 @@ def create_controller(group, version, kind, singular, plural):
         sys.exit(1)
 
     resource_controller_kwargs = {
-        "target_relative_path": os.path.relpath(resource_controller_path, os.getcwd()),
+        "target_relative_path": os.path.relpath(resource_controller_path, WORK_DIR),
         "template_relative_path": os.path.join("create", "resource_controller.py"),
         "render_vars": {
             "kind": kind,
@@ -106,7 +119,7 @@ def create_or_update_chart_basic_file(project_name, chart_version, chart_app_ver
     if not os.path.exists(helm_ignore_path):
         echo.info("chart/.helmignore")
         helm_ignore_path_kwargs = {
-            "target_relative_path": os.path.relpath(helm_ignore_path, os.getcwd()),
+            "target_relative_path": os.path.relpath(helm_ignore_path, WORK_DIR),
             "template_relative_path": os.path.join("chart", ".helmignore"),
             "render_vars": {},
         }
@@ -116,7 +129,7 @@ def create_or_update_chart_basic_file(project_name, chart_version, chart_app_ver
     echo.info("chart/Chart.yaml")
     if not os.path.exists(chart_yaml_path):
         chart_yaml_kwargs = {
-            "target_relative_path": os.path.relpath(chart_yaml_path, os.getcwd()),
+            "target_relative_path": os.path.relpath(chart_yaml_path, WORK_DIR),
             "template_relative_path": os.path.join("chart", "Chart.yaml"),
             "render_vars": {"project_name": project_name, "version": chart_version, "appVersion": chart_app_version},
         }
@@ -152,10 +165,10 @@ def create_or_update_chart_crds(resource_versions):
         "kind": _resource.kind,
     }
     crd_yaml_path = os.path.join(crds_dir, f'{meta["name"]}.yaml')
-    target_relative_path = os.path.relpath(crd_yaml_path, os.getcwd())
+    target_relative_path = os.path.relpath(crd_yaml_path, WORK_DIR)
     echo.info(target_relative_path)
     chart_yaml_kwargs = {
-        "target_relative_path": os.path.relpath(crd_yaml_path, os.getcwd()),
+        "target_relative_path": os.path.relpath(crd_yaml_path, WORK_DIR),
         "template_relative_path": os.path.join("chart", "crds", "crd.yaml"),
         "render_vars": {"meta": meta, "resource_versions": resource_versions},
     }
@@ -168,3 +181,40 @@ def create_or_update_chart_crds(resource_versions):
         version["schema"]["openAPIV3Schema"] = resource_versions[index]["openapi_v3_schema"]
     with open(crd_yaml_path, "w") as file:
         yaml.dump(data, file)
+
+
+def create_or_update_chart_templates(project_name, cluster_role_rule_list):
+    chart_templates_dir = os.path.join(WORK_DIR, "chart", "templates")
+    os.makedirs(chart_templates_dir, exist_ok=True)
+
+    raw_chart_templates_dir = os.path.join(TEMPLATE_ROOT_DIR, "chart", "templates")
+
+    for template_relative_path in os.listdir(raw_chart_templates_dir):
+        target_file_path = os.path.join(chart_templates_dir, template_relative_path)
+        target_relative_path = os.path.relpath(target_file_path, WORK_DIR)
+        echo.info(target_relative_path)
+        if template_relative_path == "clusterrole.yaml":
+            create_kwargs = {
+                "target_relative_path": target_relative_path,
+                "template_relative_path": os.path.join("chart", "templates", template_relative_path),
+                "render_vars": {"cluster_role_rule_list": cluster_role_rule_list},
+            }
+        else:
+            create_kwargs = {
+                "target_relative_path": target_relative_path,
+                "template_relative_path": os.path.join("chart", "templates", template_relative_path),
+                "replace_keyword": {"bof_tmp_project": project_name},
+            }
+        create_file(**create_kwargs)
+
+
+def create_chart_values(project_name):
+    chart_values_path = os.path.join(WORK_DIR, "chart", "values.yaml")
+    if not os.path.exists(chart_values_path):
+        echo.info("chart/values.yaml")
+        chart_yaml_kwargs = {
+            "target_relative_path": os.path.relpath(chart_values_path, WORK_DIR),
+            "template_relative_path": os.path.join("chart", "values.yaml"),
+            "render_vars": {"project_name": project_name},
+        }
+        create_file(**chart_yaml_kwargs)

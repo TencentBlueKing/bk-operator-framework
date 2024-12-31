@@ -16,6 +16,7 @@ def main(part):
     )
 
     resource_versions_dict = {}
+    cluster_role_rule_list = []
     for resource in project_desc.resources:
         if resource.api:
             key = f"{resource.plural}.{resource.group}.{resource.domain}"
@@ -25,7 +26,7 @@ def main(part):
             )
             resource_schema_model = getattr(resource_schema_module, resource.kind)
             resource_additional_printer_columns = getattr(
-                resource_schema_module, f"{resource.kind}AdditionalPrinterColumns"
+                resource_schema_module, f"{resource.kind}AdditionalPrinterColumnList"
             )
             openapi_v3_schema = crd.get_openapi_v3_schema(resource_schema_model)
             if not openapi_v3_schema.get("properties", {}).get("status", {}).get("properties"):
@@ -37,8 +38,15 @@ def main(part):
                     "additional_printer_columns": resource_additional_printer_columns,
                 }
             )
+        if resource.controller:
+            controller_module = import_module(f"internal.controller.{resource.singular}_controller")
+            cluster_role_rule_list.extend(getattr(controller_module, "ServiceAccountClusterRoleRuleList"))
 
     for _, resource_versions in resource_versions_dict.items():
         template.create_or_update_chart_crds(resource_versions)
+
+    template.create_or_update_chart_templates(project_desc.project_name, cluster_role_rule_list)
+
+    template.create_chart_values(project_desc.project_name)
 
     project_desc.render()
