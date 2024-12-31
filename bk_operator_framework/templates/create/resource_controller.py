@@ -26,6 +26,8 @@ async def reconcile(spec, status, type, patch, logger, **kwargs):
     """
     logger.info(f"Received {type} event, spec -> {spec}, status -> {status}.")
 
+    spec_obj = {{ kind }}Spec(**spec)
+    status_obj = {{ kind }}Status(**status) if status else None
     # TODO(user): your logic here
 
     # set the observed state of {{ kind }} object
