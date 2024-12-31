@@ -197,7 +197,7 @@ def create_or_update_chart_templates(project_name, cluster_role_rule_list):
             create_kwargs = {
                 "target_relative_path": target_relative_path,
                 "template_relative_path": os.path.join("chart", "templates", template_relative_path),
-                "render_vars": {"cluster_role_rule_list": cluster_role_rule_list},
+                "render_vars": {"project_name": project_name, "cluster_role_rule_list": cluster_role_rule_list},
             }
         else:
             create_kwargs = {
