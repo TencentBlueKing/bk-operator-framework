@@ -28,3 +28,7 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
+        {{- with .Values.controller.env }}
+        env:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
