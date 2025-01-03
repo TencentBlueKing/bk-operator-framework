@@ -25,7 +25,7 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
-          command: {{ .Values.controller.command }}
+          command: {{ .Values.controller.command | toJson }}
           {{- with .Values.controller.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
