@@ -175,6 +175,7 @@ def create_or_update_chart_crds(resource_versions):
     create_file(**chart_yaml_kwargs)
 
     yaml = YAML()
+    yaml.indent(mapping=2, sequence=4, offset=2)
     with open(crd_yaml_path) as file:
         data = yaml.load(file)
     for index, version in enumerate(data["spec"]["versions"]):

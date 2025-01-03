@@ -11,13 +11,21 @@ image:
   tag: "0.0.1"
 
 controller:
+  # Please note that there is only one replica.
+  # Keep it so. If there will be two or more operators running in the cluster for the same objects,
+  # they will collide with each other and the consequences are unpredictable.
+  # In case of pod restarts, only one pod should be running at a time too.
+  replicaCount: 1
+  # This is the controller startup command.
+  # More information can be found here: https://kopf.readthedocs.io/en/stable/cli/
+  command: ["python", "main.py", "run", "-A"]
   # Environment variables of controller
   env: []
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   resources:
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
     requests:
       cpu: "0.5"
       memory: 1Gi
@@ -25,7 +33,8 @@ controller:
        cpu: "1"
        memory: 2Gi
 
-# This is for the secretes for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+# This is for the secretes for pulling an image from a private repository.
+# More information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
 
 # This is to override the chart name.
