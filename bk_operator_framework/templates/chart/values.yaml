@@ -18,7 +18,7 @@ controller:
   replicaCount: 1
   # This is the controller startup command.
   # More information can be found here: https://kopf.readthedocs.io/en/stable/cli/
-  command: ["python", "main.py", "run", "-A"]
+  command: ["python", "main.py", "run", "controller", "-A"]
   # Environment variables of controller
   env: []
   # We usually recommend not to specify default resources and to leave this as a conscious

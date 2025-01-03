@@ -30,14 +30,18 @@ def _list_all_modules(module_dir: str, sub_dir: str = None) -> typing.List[str]:
     return modules
 
 
-def discover_controllers(module):
+def load_server(server_type):
+    logger.info(f"server_type is {server_type}")
+    if server_type not in {"controller", "webhook"}:
+        raise RuntimeError(f"The server type[{server_type}] is invalid")
+    module = import_module(f"internal.{server_type}")
     module_dir = module.__path__[0]
     sys.path_importer_cache.pop(module_dir, None)
     modules = _list_all_modules(module_dir)
     for name in modules:
         module_path = "{}.{}".format(module.__name__, name)
         import_module(module_path)
-        logger.info(f"Discovered {module_path}")
+        logger.info(f"{module_path} has been loaded")
 
 
 def load_kube_config():
