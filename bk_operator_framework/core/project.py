@@ -49,8 +49,8 @@ class ProjectDesc:
         with open(self.file_path) as file:
             data = yaml.safe_load(file)
 
-        self.domain = data.get("domain", "")
-        self.project_name = data.get("project_name", "")
+        self.domain = data["domain"]
+        self.project_name = data["project_name"]
 
         self.resources = [ProjectResourceSchema(**r) for r in data.get("resources", [])]
         self.chart = data.get("chart") and ProjectChartSchema(**data.get("chart"))
@@ -67,53 +67,65 @@ class ProjectDesc:
         }
 
         template.create_file(**kwargs)
+        echo.info("project_desc.yaml")
 
-    def create_or_update_resources(self, group, version, kind, plural, singular, resource, controller, namespaced):
+    def create_or_update_resource(
+        self,
+        group: str,
+        version: str,
+        kind: str,
+        plural: str = None,
+        resource: bool = None,
+        controller: bool = None,
+        namespaced: bool = None,
+        webhooks: dict = None,
+        external_api_domain: str = None,
+    ) -> ProjectResourceSchema:
         """
         Create Or update resources
-        :param group:
-        :param version:
-        :param kind:
-        :param plural:
-        :param singular:
-        :param resource:
-        :param controller:
-        :param namespaced:
-        :return:
         """
-        resource_info = {
-            "group": group,
-            "version": version,
-            "kind": kind,
-            "singular": singular,
-            "plural": plural,
-            "controller": controller,
-            "domain": self.domain,
-        }
-        if resource:
-            resource_info.update({"api": {"namespaced": namespaced}})
-        resource = ProjectResourceSchema(**resource_info)
-        resource_exist = False
-        for index, old_resource in enumerate(self.resources):
-            if (resource.group, resource.domain, resource.version, resource.kind, resource.plural) == (
-                old_resource.group,
-                old_resource.domain,
-                old_resource.version,
-                old_resource.kind,
-                old_resource.plural,
-            ):
-                if old_resource.api:
-                    resource.api = old_resource.api
+        self.reload()
+        singular = kind.lower()
+        if plural is None:
+            plural = f"{singular}s"
+        domain = external_api_domain if external_api_domain is not None else self.domain
+        desire_resource_key = f"{plural}.{group}.{domain}/{version}"
 
-                if old_resource.controller:
-                    resource.controller = old_resource.controller
-
-                self.resources[index] = resource
-                resource_exist = True
+        live_resource = None
+        for r in self.resources:
+            _exist_resource_key = f"{r.plural}.{r.group}.{r.domain}/{r.version}"
+            if desire_resource_key == _exist_resource_key:
+                live_resource = r
                 break
 
-        if not resource_exist:
-            self.resources.append(resource)
+        if live_resource:
+            if resource and not live_resource.api:
+                live_resource.api = ProjectResourceSchema.Api(namespaced=namespaced)
+            if controller and not live_resource.controller:
+                live_resource.controller = True
+            if webhooks is not None:
+                live_resource.webhooks = ProjectResourceSchema.Webhook(**webhooks)
+
+            return live_resource
+        else:
+            desire_resource_info = {
+                "group": group,
+                "version": version,
+                "kind": kind,
+                "singular": singular,
+                "plural": plural,
+                "domain": domain,
+            }
+            if resource:
+                desire_resource_info.update({"api": {"namespaced": namespaced}})
+            if controller is not None:
+                desire_resource_info["controller"] = controller
+            if webhooks is not None:
+                desire_resource_info["webhooks"] = webhooks
+            desire_resource = ProjectResourceSchema(**desire_resource_info)
+            self.resources.append(desire_resource)
+
+            return desire_resource
 
     def create_or_update_chart(self, part):
         if not self.chart:

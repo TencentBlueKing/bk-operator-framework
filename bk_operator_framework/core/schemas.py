@@ -71,6 +71,11 @@ class ProjectResourceSchema(BaseModel):
             default=True,
         )
 
+    class Webhook(BaseModel):
+        defaulting: str = Field(description="if set, scaffold the defaulting webhook", default=False)
+        validation: bool = Field(description="if set, scaffold the validating webhook", default=False)
+        webhookVersion: str = Field(description="K8s Mutating/Validating WebhookConfiguration Version", default="v1")
+
     api: Optional[Api] = Field(description="Create Api Resource", default=None)
     controller: bool = Field(description="Create Controller")
     domain: str = Field(description="Resource Domain")
@@ -79,6 +84,7 @@ class ProjectResourceSchema(BaseModel):
     plural: str = Field(description="Resource Plural")
     singular: str = Field(description="Resource Singular")
     version: str = Field(description="Resource Version")
+    webhooks: Webhook = Field(description="Webhook Configuration", default=None)
 
 
 class ProjectChartSchema(BaseModel):

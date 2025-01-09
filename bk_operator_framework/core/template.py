@@ -44,7 +44,7 @@ def create_file(target_relative_path, template_relative_path, render_vars=None, 
         file.write(rendered_content)
 
 
-def create_resource(group, version, kind, singular, plural, domain):
+def create_resource_api(group: str, version: str, kind: str, singular: str, plural: str, domain: str) -> None:
     echo.info(f"api/{group}/{version}/group_version.py")
     echo.info(f"api/{group}/{version}/{singular}_schemas.py")
 
@@ -78,10 +78,10 @@ def create_resource(group, version, kind, singular, plural, domain):
     }
     create_file(**resource_schemas_kwargs)
 
-    return resource_dir
 
-
-def create_controller(group, version, kind, singular, plural):
+def create_resource_controller(
+    group: str, version: str, kind: str, singular: str, plural: str, external_api_domain: str
+):
     echo.info(f"internal/controller/{singular}_controller.py")
 
     controller_dir = os.path.join(WORK_DIR, "internal", "controller")
@@ -95,9 +95,13 @@ def create_controller(group, version, kind, singular, plural):
         echo.fata(f"failed to create internal/controller/{singular}_controller.py: file already exists")
         sys.exit(1)
 
+    if external_api_domain is not None:
+        template_relative_path = os.path.join("create", "external_resource_controller.py")
+    else:
+        template_relative_path = os.path.join("create", "resource_controller.py")
     resource_controller_kwargs = {
         "target_relative_path": os.path.relpath(resource_controller_path, WORK_DIR),
-        "template_relative_path": os.path.join("create", "resource_controller.py"),
+        "template_relative_path": template_relative_path,
         "render_vars": {
             "kind": kind,
             "plural": plural,
@@ -109,6 +113,10 @@ def create_controller(group, version, kind, singular, plural):
     create_file(**resource_controller_kwargs)
 
     return controller_dir
+
+
+def create_resource_webhook():
+    pass
 
 
 def create_or_update_chart_basic_file(project_name, chart_version, chart_app_version):

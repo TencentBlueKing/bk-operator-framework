@@ -3,22 +3,26 @@ domain: {{ project_desc.domain }}
 {% if project_desc.resources -%}
 resources:
 {%- for resource in project_desc.resources %}
-- {% if not resource.api -%}
-  api: null
-  {%- else -%}
+- plural: {{  resource.plural }}
+  group: {{ resource.group  if resource.group else '""' }}
+  domain: {{ resource.domain if resource.domain else '""' }}
+  version: {{  resource.version }}
+  kind: {{  resource.kind }}
+  singular: {{  resource.singular }}
+  controller: {{ 'true' if resource.controller else 'false' }}
+  {%- if resource.api %}
   api:
     crdVersion: {{ resource.api.crdVersion }}
     namespaced: {{ 'true' if resource.api.namespaced else 'false' }}
     served: {{ 'true' if resource.api.served else 'false' }}
     storage: {{ 'true' if resource.api.storage else 'false' }}
+  {%- endif -%}
+  {%- if resource.webhooks -%}
+  webhooks:
+    defaulting: {{ 'true' if resource.webhooks.defaulting else 'false' }}
+    validation: {{ 'true' if resource.webhooks.validation else 'false' }}
+    webhookVersion: {{ resource.webhooks.webhookVersion }}
   {%- endif %}
-  controller: {{ 'true' if resource.controller else 'false' }}
-  domain: {{ resource.domain }}
-  group: {{  resource.group }}
-  kind: {{  resource.kind }}
-  plural: {{  resource.plural }}
-  singular: {{  resource.singular }}
-  version: {{  resource.version }}
 {%- endfor %}
 {% endif %}
 {%- if project_desc.chart -%}
