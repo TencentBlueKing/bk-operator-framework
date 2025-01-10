@@ -1,21 +1,21 @@
 import kopf
-from bk_operator_framework.core.schemas import ClusterRoleRuleSchema
+from bk_operator_framework.core.schemas import RBACRule
 
-from api.{{group}}.{{version}}.group_version import GroupVersion
+from api.{{group}}.{{version}}.group_version import GROUP_VERSION
 from api.{{group}}.{{version}}.{{singular}}_schemas import (
-    {{ kind }}Plural,
+    {{ kind | upper }}_PLURAL,
     {{ kind }}Spec,
     {{ kind }}Status,
 )
 
-ServiceAccountClusterRoleRuleList: list[ClusterRoleRuleSchema] = [
-    ClusterRoleRuleSchema(apiGroups=[GroupVersion.group], resources=[{{ kind }}Plural], verbs=["*"]),
-    ClusterRoleRuleSchema(apiGroups=[GroupVersion.group], resources=[f"{{ '{' + kind }}Plural}/finalizers"], verbs=["update"]),
-    ClusterRoleRuleSchema(apiGroups=[GroupVersion.group], resources=[f"{{ '{' + kind }}Plural}/status"], verbs=["get", "update", "patch"])
+rbac_rule_list: list[RBACRule] = [
+    RBACRule(apiGroups=[GROUP_VERSION.group], resources=[{{ kind | upper }}_PLURAL], verbs=["get", "list", "watch", "create", "update", "patch", "delete"]),
+    RBACRule(apiGroups=[GROUP_VERSION.group], resources=[f"{{ '{' + kind | upper }}_PLURAL}/finalizers"], verbs=["update"]),
+    RBACRule(apiGroups=[GROUP_VERSION.group], resources=[f"{{ '{' + kind | upper }}_PLURAL}/status"], verbs=["get", "update", "patch"])
 ]
 
 
-@kopf.on.event(group=GroupVersion.group, version=GroupVersion.version, plural={{ kind }}Plural)
+@kopf.on.event(group=GROUP_VERSION.group, version=GROUP_VERSION.version, plural={{ kind | upper }}_PLURAL)
 async def reconcile(spec, status, type, patch, logger, **kwargs):
     """
     Reconcile is part of the main kubernetes reconciliation loop which aims to

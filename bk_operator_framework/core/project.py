@@ -5,7 +5,7 @@ import yaml
 
 from bk_operator_framework.cli_actions import echo
 from bk_operator_framework.core import template
-from bk_operator_framework.core.schemas import ProjectChartSchema, ProjectResourceSchema
+from bk_operator_framework.core.schemas import ProjectChart, ProjectResource
 
 
 class ProjectDesc:
@@ -52,8 +52,8 @@ class ProjectDesc:
         self.domain = data["domain"]
         self.project_name = data["project_name"]
 
-        self.resources = [ProjectResourceSchema(**r) for r in data.get("resources", [])]
-        self.chart = data.get("chart") and ProjectChartSchema(**data.get("chart"))
+        self.resources = [ProjectResource(**r) for r in data.get("resources", [])]
+        self.chart = data.get("chart") and ProjectChart(**data.get("chart"))
 
     def render(self):
         """
@@ -80,7 +80,7 @@ class ProjectDesc:
         namespaced: bool = None,
         webhooks: dict = None,
         external_api_domain: str = None,
-    ) -> ProjectResourceSchema:
+    ) -> ProjectResource:
         """
         Create Or update resources
         """
@@ -100,11 +100,11 @@ class ProjectDesc:
 
         if live_resource:
             if resource and not live_resource.api:
-                live_resource.api = ProjectResourceSchema.Api(namespaced=namespaced)
+                live_resource.api = ProjectResource.Api(namespaced=namespaced)
             if controller and not live_resource.controller:
                 live_resource.controller = True
             if webhooks is not None:
-                live_resource.webhooks = ProjectResourceSchema.Webhook(**webhooks)
+                live_resource.webhooks = ProjectResource.Webhook(**webhooks)
 
             return live_resource
         else:
@@ -122,14 +122,14 @@ class ProjectDesc:
                 desire_resource_info["controller"] = controller
             if webhooks is not None:
                 desire_resource_info["webhooks"] = webhooks
-            desire_resource = ProjectResourceSchema(**desire_resource_info)
+            desire_resource = ProjectResource(**desire_resource_info)
             self.resources.append(desire_resource)
 
             return desire_resource
 
     def create_or_update_chart(self, part):
         if not self.chart:
-            self.chart = ProjectChartSchema()
+            self.chart = ProjectChart()
             self.chart.bump_app_version()
         else:
             self.chart.bump_version(part)

@@ -1,9 +1,9 @@
 from pydantic import BaseModel, Field
-from bk_operator_framework.core.schemas import AdditionalPrinterColumnSchema
+from bk_operator_framework.core.schemas import AdditionalPrinterColumn
 
 # {{ plural }} is the plural form of {{ kind }}.
 # Edit {{ singular }}_schemas.py and project_desc.yaml to update it.
-{{ kind }}Plural = "{{ plural }}"
+{{ kind | upper }}_PLURAL = "{{ plural }}"
 
 
 class {{ kind }}Spec(BaseModel):
@@ -31,4 +31,4 @@ class {{ kind }}(BaseModel):
 # Specifies additional columns returned in Table output.
 # See https://kubernetes.io/docs/reference/using-api/api-concepts/#receiving-resources-as-tables for details.
 # If no columns are specified, a single column displaying the age of the custom resource is used.
-{{ kind }}AdditionalPrinterColumnList: list[AdditionalPrinterColumnSchema] = []
+additional_printer_column_list: list[AdditionalPrinterColumn] = []

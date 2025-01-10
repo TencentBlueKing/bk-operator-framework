@@ -1,17 +1,16 @@
 import kopf
 
-from bk_operator_framework.core.schemas import ClusterRoleRuleSchema
-from bk_operator_framework.core.schemas import GroupVersionSchema
+from bk_operator_framework.core.schemas import RBACRule, GroupVersion
 
-GroupVersion = GroupVersionSchema(group="{{ group }}", version="{{ version }}")
-{{ kind }}Plural = "{{ plural }}"
+GROUP_VERSION = GroupVersion(group="{{ group }}", version="{{ version }}")
+{{ kind | upper }}_PLURAL = "{{ plural }}"
 
-ServiceAccountClusterRoleRuleList: list[ClusterRoleRuleSchema] = [
-    ClusterRoleRuleSchema(apiGroups=[GroupVersion.group], resources=[{{ kind }}Plural], verbs=["get", "list", "watch"]),
+rbac_rule_list:list[RBACRule] = [
+    RBACRuleSchema(apiGroups=[GROUP_VERSION.group], resources=[{{ kind | upper }}_PLURAL], verbs=["get", "list", "watch"]),
 ]
 
 
-@kopf.on.event(group=GroupVersion.group, version=GroupVersion.version, plural={{ kind }}Plural)
+@kopf.on.event(group=GROUP_VERSION.group, version=GROUP_VERSION.version, plural={{ kind | upper }}_PLURAL)
 async def reconcile(spec, status, type, patch, logger, **kwargs):
     """
     Reconcile is part of the main kubernetes reconciliation loop which aims to

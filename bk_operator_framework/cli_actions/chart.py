@@ -25,9 +25,7 @@ def main(part):
                 f"api.{resource.group}.{resource.version}.{resource.singular}_schemas"
             )
             resource_schema_model = getattr(resource_schema_module, resource.kind)
-            resource_additional_printer_columns = getattr(
-                resource_schema_module, f"{resource.kind}AdditionalPrinterColumnList"
-            )
+            resource_additional_printer_columns = getattr(resource_schema_module, "additional_printer_column_list")
             openapi_v3_schema = crd.get_openapi_v3_schema(resource_schema_model)
             if not openapi_v3_schema.get("properties", {}).get("status", {}).get("properties"):
                 openapi_v3_schema["properties"].pop("status", None)
@@ -40,7 +38,7 @@ def main(part):
             )
         if resource.controller:
             controller_module = import_module(f"internal.controller.{resource.singular}_controller")
-            cluster_role_rule_list.extend(getattr(controller_module, "ServiceAccountClusterRoleRuleList"))
+            cluster_role_rule_list.extend(getattr(controller_module, "rbac_rule_list"))
 
     for _, resource_versions in resource_versions_dict.items():
         template.create_or_update_chart_crds(resource_versions)

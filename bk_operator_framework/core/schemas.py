@@ -1,11 +1,11 @@
 import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 import semver
 from pydantic import BaseModel, Field
 
 
-class GroupVersionSchema(BaseModel):
+class GroupVersion(BaseModel):
     group: str = Field(description="Resource Group")
     version: str = Field(description="Resource Version")
 
@@ -13,7 +13,7 @@ class GroupVersionSchema(BaseModel):
         return f"GroupVersion -> {self.group}/{self.version}"
 
 
-class AdditionalPrinterColumnSchema(BaseModel):
+class AdditionalPrinterColumn(BaseModel):
     name: str = Field(description="A human readable name for the column")
     type: str = Field(description="An OpenAPI type definition for this column")
     jsonPath: str = Field(
@@ -32,7 +32,7 @@ class AdditionalPrinterColumnSchema(BaseModel):
     )
 
 
-class ClusterRoleRuleSchema(BaseModel):
+class RBACRule(BaseModel):
     apiGroups: list[str] = Field(
         description="APIGroups is the name of the APIGroup that contains the resources."
         "If multiple API groups are specified, any action requested against one of the enumerated resources in any API group will be allowed."
@@ -41,7 +41,7 @@ class ClusterRoleRuleSchema(BaseModel):
     resources: list[str] = Field(
         description="Resources is a list of resources this rule applies to. '*' represents all resources."
     )
-    verbs: list[str] = Field(
+    verbs: list[Literal["get", "list", "watch", "create", "update", "patch", "delete", "*"]] = Field(
         description="Verbs is a list of Verbs that apply to ALL the ResourceKinds contained in this rule. '*' represents all verbs."
     )
 
@@ -58,7 +58,7 @@ class ClusterRoleRuleSchema(BaseModel):
     )
 
 
-class ProjectResourceSchema(BaseModel):
+class ProjectResource(BaseModel):
     class Api(BaseModel):
         crdVersion: str = Field(description="K8s CustomResourceDefinition Version", default="v1")
         namespaced: bool = Field(description="Resource is namespaced (default true)", default=True)
@@ -87,7 +87,7 @@ class ProjectResourceSchema(BaseModel):
     webhooks: Webhook = Field(description="Webhook Configuration", default=None)
 
 
-class ProjectChartSchema(BaseModel):
+class ProjectChart(BaseModel):
     version: str = Field(description="Helm Chart Version", default="0.0.1")
     appVersion: str = Field(description="Helm Chart appVersion", default="1.16.0")
 

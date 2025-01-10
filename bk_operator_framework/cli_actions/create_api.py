@@ -34,7 +34,9 @@ def main(
 
     echo.info("Writing scaffold for you to edit...")
     if resource:
-        template.create_resource_api(group, version, kind, desire_resource.singular, plural, desire_resource.domain)
+        template.create_resource_api(
+            group, version, kind, desire_resource.singular, desire_resource.plural, desire_resource.domain
+        )
     if controller:
         template.create_resource_controller(
             group, version, kind, desire_resource.singular, desire_resource.plural, external_api_domain

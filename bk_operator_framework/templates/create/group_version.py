@@ -1,3 +1,3 @@
-from bk_operator_framework.core.schemas import GroupVersionSchema
+from bk_operator_framework.core.schemas import GroupVersion
 
-GroupVersion = GroupVersionSchema(group="{{ group }}", version="{{ version }}")
+GROUP_VERSION = GroupVersion(group="{{ group }}", version="{{ version }}")
