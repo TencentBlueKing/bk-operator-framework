@@ -31,4 +31,4 @@ class {{ kind }}(BaseModel):
 # Specifies additional columns returned in Table output.
 # See https://kubernetes.io/docs/reference/using-api/api-concepts/#receiving-resources-as-tables for details.
 # If no columns are specified, a single column displaying the age of the custom resource is used.
-additional_printer_column_list: list[AdditionalPrinterColumn] = []
+ADDITIONAL_PRINTER_COLUMN_LIST: list[AdditionalPrinterColumn] = []

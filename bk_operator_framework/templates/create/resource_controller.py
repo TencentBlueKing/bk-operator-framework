@@ -8,7 +8,7 @@ from api.{{group}}.{{version}}.{{singular}}_schemas import (
     {{ kind }}Status,
 )
 
-rbac_rule_list: list[RBACRule] = [
+RBAC_RULE_LIST: list[RBACRule] = [
     RBACRule(apiGroups=[GROUP_VERSION.group], resources=[{{ kind | upper }}_PLURAL], verbs=["get", "list", "watch", "create", "update", "patch", "delete"]),
     RBACRule(apiGroups=[GROUP_VERSION.group], resources=[f"{{ '{' + kind | upper }}_PLURAL}/finalizers"], verbs=["update"]),
     RBACRule(apiGroups=[GROUP_VERSION.group], resources=[f"{{ '{' + kind | upper }}_PLURAL}/status"], verbs=["get", "update", "patch"])

@@ -5,7 +5,7 @@ from bk_operator_framework.core.schemas import RBACRule, GroupVersion
 GROUP_VERSION = GroupVersion(group="{{ group }}", version="{{ version }}")
 {{ kind | upper }}_PLURAL = "{{ plural }}"
 
-rbac_rule_list:list[RBACRule] = [
+RBAC_RULE_LIST: list[RBACRule] = [
     RBACRuleSchema(apiGroups=[GROUP_VERSION.group], resources=[{{ kind | upper }}_PLURAL], verbs=["get", "list", "watch"]),
 ]
 
