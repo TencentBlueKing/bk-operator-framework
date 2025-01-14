@@ -23,6 +23,8 @@ async def reconcile(spec, status, type, patch, logger, **kwargs):
     TODO(user): Modify the Reconcile function to compare the state specified by
     the {{ kind }} object against the actual cluster state, and then
     perform operations to make the cluster state reflect the state specified by the user.
+    More information can be found here:
+    https://kopf.readthedocs.io/en/stable/handlers/#event-watching-handlers
     """
     logger.info(f"Received {type} event, spec -> {spec}, status -> {status}.")
 
