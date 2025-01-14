@@ -39,7 +39,14 @@ def main(
         )
     if controller:
         template.create_resource_controller(
-            group, version, kind, desire_resource.singular, desire_resource.plural, external_api_domain
+            group,
+            version,
+            kind,
+            desire_resource.singular,
+            desire_resource.plural,
+            desire_resource.domain,
+            external_api_domain,
+            desire_resource.api,
         )
 
     project_desc.render()

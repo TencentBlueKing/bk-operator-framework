@@ -17,7 +17,7 @@ resources:
     served: {{ 'true' if resource.api.served else 'false' }}
     storage: {{ 'true' if resource.api.storage else 'false' }}
   {%- endif -%}
-  {%- if resource.webhooks -%}
+  {%- if resource.webhooks %}
   webhooks:
     defaulting: {{ 'true' if resource.webhooks.defaulting else 'false' }}
     validation: {{ 'true' if resource.webhooks.validation else 'false' }}

@@ -2,11 +2,11 @@ import kopf
 
 from bk_operator_framework.core.schemas import RBACRule, GroupVersion
 
-GROUP_VERSION = GroupVersion(group="{{ group }}", version="{{ version }}")
+GROUP_VERSION = GroupVersion(group="{{ (group + '.' + domain).rstrip('.') }}", version="{{ version }}")
 {{ kind | upper }}_PLURAL = "{{ plural }}"
 
 RBAC_RULE_LIST: list[RBACRule] = [
-    RBACRuleSchema(apiGroups=[GROUP_VERSION.group], resources=[{{ kind | upper }}_PLURAL], verbs=["get", "list", "watch"]),
+    RBACRule(apiGroups=[GROUP_VERSION.group], resources=[{{ kind | upper }}_PLURAL], verbs=["get", "list", "watch"]),
 ]
 
 

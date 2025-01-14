@@ -80,7 +80,14 @@ def create_resource_api(group: str, version: str, kind: str, singular: str, plur
 
 
 def create_resource_controller(
-    group: str, version: str, kind: str, singular: str, plural: str, external_api_domain: str
+    group: str,
+    version: str,
+    kind: str,
+    singular: str,
+    plural: str,
+    domain: str,
+    external_api_domain: str,
+    resource: bool,
 ):
     echo.info(f"internal/controller/{singular}_controller.py")
 
@@ -95,7 +102,7 @@ def create_resource_controller(
         echo.fata(f"failed to create internal/controller/{singular}_controller.py: file already exists")
         sys.exit(1)
 
-    if external_api_domain is not None:
+    if external_api_domain is not None or not resource:
         template_relative_path = os.path.join("create", "external_resource_controller.py")
     else:
         template_relative_path = os.path.join("create", "resource_controller.py")
@@ -107,6 +114,7 @@ def create_resource_controller(
             "plural": plural,
             "singular": singular,
             "group": group,
+            "domain": domain,
             "version": version,
         },
     }
@@ -115,8 +123,52 @@ def create_resource_controller(
     return controller_dir
 
 
-def create_resource_webhook():
-    pass
+def create_resource_webhook(
+    group: str,
+    version: str,
+    kind: str,
+    singular: str,
+    plural: str,
+    domain: str,
+    defaulting: bool,
+    validation: bool,
+    external_api_domain: str,
+    resource: bool,
+):
+    echo.info(f"internal/webhook/{singular}_webhook.py")
+
+    webhook_dir = os.path.join(WORK_DIR, "internal", "webhook")
+    os.makedirs(webhook_dir, exist_ok=True)
+
+    controller_init_path = os.path.join(webhook_dir, "__init__.py")
+    open(controller_init_path, "a").close()
+
+    resource_webhook_path = os.path.join(webhook_dir, f"{singular}_webhook.py")
+    if os.path.exists(resource_webhook_path):
+        echo.fata(f"failed to create internal/webhook/{singular}_webhook.py: file already exists")
+        sys.exit(1)
+
+    if external_api_domain is not None or not resource:
+        template_relative_path = os.path.join("create", "external_resource_webhook.py")
+    else:
+        template_relative_path = os.path.join("create", "resource_webhook.py")
+    resource_webhook_kwargs = {
+        "target_relative_path": os.path.relpath(resource_webhook_path, WORK_DIR),
+        "template_relative_path": template_relative_path,
+        "render_vars": {
+            "kind": kind,
+            "plural": plural,
+            "singular": singular,
+            "group": group,
+            "version": version,
+            "domain": domain,
+            "defaulting": defaulting,
+            "validation": validation,
+        },
+    }
+    create_file(**resource_webhook_kwargs)
+
+    return webhook_dir
 
 
 def create_or_update_chart_basic_file(project_name, chart_version, chart_app_version):

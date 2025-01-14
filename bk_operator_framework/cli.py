@@ -81,8 +81,15 @@ def api(
 @click.option("--plural", type=str, help="resource irregular plural form")
 @click.option("--defaulting", type=bool, is_flag=True, help="if set, scaffold the defaulting webhook")
 @click.option("--validation", type=bool, is_flag=True, help="if set, scaffold the validating webhook")
-def webhook(group, version, kind, plural, defaulting, validation):
-    cli_actions_create_webhook.main(group, version, kind, plural, defaulting, validation)
+@click.option(
+    "--external-api-domain",
+    type=str,
+    help="Specify the domain name for the external API. This domain is used to generate accurate RBAC markers and permissions for the external resources",
+)
+def webhook(
+    group: str, version: str, kind: str, plural: str, defaulting: bool, validation: bool, external_api_domain: str
+):
+    cli_actions_create_webhook.main(group, version, kind, plural, defaulting, validation, external_api_domain)
 
 
 @bof.command()

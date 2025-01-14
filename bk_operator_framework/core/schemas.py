@@ -72,12 +72,12 @@ class ProjectResource(BaseModel):
         )
 
     class Webhook(BaseModel):
-        defaulting: str = Field(description="if set, scaffold the defaulting webhook", default=False)
+        defaulting: bool = Field(description="if set, scaffold the defaulting webhook", default=False)
         validation: bool = Field(description="if set, scaffold the validating webhook", default=False)
         webhookVersion: str = Field(description="K8s Mutating/Validating WebhookConfiguration Version", default="v1")
 
     api: Optional[Api] = Field(description="Create Api Resource", default=None)
-    controller: bool = Field(description="Create Controller")
+    controller: bool = Field(description="Create Controller", default=None)
     domain: str = Field(description="Resource Domain")
     group: str = Field(description="Resource Group")
     kind: str = Field(description="Resource Kind")
