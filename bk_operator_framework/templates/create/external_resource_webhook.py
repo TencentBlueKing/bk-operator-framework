@@ -8,7 +8,7 @@ GROUP_VERSION = GroupVersion(group="{{ (group + '.' + domain).rstrip('.') }}", v
 
 
 @kopf.on.mutate(group=GROUP_VERSION.group, version=GROUP_VERSION.version, plural={{ kind | upper }}_PLURAL)
-async def default(spec, patch, logger, **kwargs):
+async def set_{{ singular }}_default(spec, patch, logger, **kwargs):
     """
     Setting default values on the custom resource of the Kind {{ kind }} when those are created or updated.
     More information can be found here:
@@ -22,7 +22,7 @@ async def default(spec, patch, logger, **kwargs):
 
 
 @kopf.on.validate(group=GROUP_VERSION.group, version=GROUP_VERSION.version, plural={{ kind | upper }}_PLURAL, operations=["CREATE"])
-async def validate_create(spec, logger, **kwargs):
+async def validate_{{ singular }}_create(spec, logger, **kwargs):
     """
     Validating the {{ kind }} resource when it is created.
     More information can be found here:
@@ -34,7 +34,7 @@ async def validate_create(spec, logger, **kwargs):
 
 
 @kopf.on.validate(group=GROUP_VERSION.group, version=GROUP_VERSION.version, plural={{ kind | upper }}_PLURAL, operations=["UPDATE"])
-async def validate_update(spec, logger, **kwargs):
+async def validate_{{ singular }}_update(spec, logger, **kwargs):
     """
     Validating the {{ kind }} resource when it is updated.
     More information can be found here:
@@ -46,7 +46,7 @@ async def validate_update(spec, logger, **kwargs):
 
 
 @kopf.on.validate(group=GROUP_VERSION.group, version=GROUP_VERSION.version, plural={{ kind | upper }}_PLURAL, operations=["DELETE"])
-async def validate_delete(spec, logger, **kwargs):
+async def validate_{{ singular }}_delete(spec, logger, **kwargs):
     """
     Validating the {{ kind }} resource when it is deleted.
     More information can be found here:
