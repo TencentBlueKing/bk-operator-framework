@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "bof_tmp_project.fullname" . }}-webhook
+  labels:
+    {{- include "bof_tmp_project.webhook.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.webhook.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "bof_tmp_project.webhook.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "bof_tmp_project.webhook.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "bof_tmp_project.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+          command: {{ .Values.webhook.command | toJson }}
+          ports:
+            - containerPort: {{ .Values.webhook.port }}
+              name: webhook
+          {{- with .Values.webhook.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: WEBHOOK_PORT
+              value: "{{ .Values.webhook.port }}"
+            {{- range .Values.webhook.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+          volumeMounts:
+            - mountPath: /workspace/etc/certs
+              name: cert
+              readOnly: true
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName:  {{ include "bof_tmp_project.fullname" . }}-webhook-server-cert

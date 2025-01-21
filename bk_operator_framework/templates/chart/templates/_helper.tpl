@@ -82,3 +82,24 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+webhook Selector labels
+*/}}
+{{- define "bof_tmp_project.webhook.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "bof_tmp_project.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.role: webhook
+{{- end }}
+
+{{/*
+webhook labels
+*/}}
+{{- define "bof_tmp_project.webhook.labels" -}}
+helm.sh/chart: {{ include "bof_tmp_project.chart" . }}
+app.kubernetes.io/name: {{ include "bof_tmp_project.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Chart.AppVersion }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.role: webhook
+{{- end }}

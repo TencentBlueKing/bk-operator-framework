@@ -5,6 +5,7 @@ import sys
 import typing
 from importlib import import_module
 
+import kopf.on
 from kubernetes import config
 
 logger = logging.getLogger("bof.core.runtime")
@@ -42,6 +43,24 @@ def load_server(server_type):
         module_path = "{}.{}".format(module.__name__, name)
         import_module(module_path)
         logger.info(f"{module_path} has been loaded")
+
+    if server_type == "webhook":
+
+        @kopf.on.startup()
+        def configure(settings: kopf.OperatorSettings, **_):
+            # Assuming that the configuration is done manually:
+            if "KUBERNETES_SERVICE_HOST" in os.environ:
+                webhook_kwargs = {
+                    "port": int(os.getenv("WEBHOOK_PORT", 8443)),
+                    "certfile": os.getenv("WEBHOOK_TLS_CERT_PATH", "/workspace/etc/certs/tls.crt"),
+                    "pkeyfile": os.getenv("WEBHOOK_TLS_KEY_PATH", "/workspace/etc/certs/tls.key"),
+                }
+            else:
+                webhook_kwargs = {
+                    "port": int(os.getenv("WEBHOOK_PORT", 8443)),
+                }
+
+            settings.admission.server = kopf.WebhookServer(**webhook_kwargs)
 
 
 def load_kube_config():

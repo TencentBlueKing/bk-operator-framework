@@ -13,7 +13,7 @@ TEMPLATE_ROOT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "te
 WORK_DIR = os.getcwd()
 
 
-def tojson(value):
+def to_json(value):
     return json.dumps(value)
 
 
@@ -36,9 +36,27 @@ def create_file(target_relative_path, template_relative_path, render_vars=None, 
             rendered_content = rendered_content.replace(k, v)
     else:
         env = Environment(loader=FileSystemLoader(TEMPLATE_ROOT_DIR))
-        env.filters["tojson"] = tojson
+        env.filters["toJson"] = to_json
         template = env.get_template(template_relative_path)
         rendered_content = template.render(**render_vars)
+    target_file = os.path.join(WORK_DIR, target_relative_path)
+    with open(target_file, "w", encoding="utf-8") as file:
+        file.write(rendered_content)
+
+
+def unusual_create_file(target_relative_path, template_relative_path, render_vars):
+    env = Environment(
+        loader=FileSystemLoader(TEMPLATE_ROOT_DIR),
+        variable_start_string="<<",
+        variable_end_string=">>",
+        block_start_string="<%",
+        block_end_string="%>",
+        comment_start_string="<#",
+        comment_end_string="#>",
+    )
+    env.filters["toJson"] = to_json
+    template = env.get_template(template_relative_path)
+    rendered_content = template.render(**render_vars)
     target_file = os.path.join(WORK_DIR, target_relative_path)
     with open(target_file, "w", encoding="utf-8") as file:
         file.write(rendered_content)
@@ -244,7 +262,7 @@ def create_or_update_chart_crds(resource_versions):
         yaml.dump(data, file)
 
 
-def create_or_update_chart_templates(project_name, cluster_role_rule_list):
+def create_or_update_chart_templates(project_name, cluster_role_rule_list, validating_webhooks, mutating_webhooks):
     chart_templates_dir = os.path.join(WORK_DIR, "chart", "templates")
     os.makedirs(chart_templates_dir, exist_ok=True)
 
@@ -254,12 +272,19 @@ def create_or_update_chart_templates(project_name, cluster_role_rule_list):
         target_file_path = os.path.join(chart_templates_dir, template_relative_path)
         target_relative_path = os.path.relpath(target_file_path, WORK_DIR)
         echo.info(target_relative_path)
-        if template_relative_path == "clusterrole.yaml":
+        if template_relative_path in {"clusterrole.yaml", "admissionwebhook.yaml"}:
             create_kwargs = {
                 "target_relative_path": target_relative_path,
                 "template_relative_path": os.path.join("chart", "templates", template_relative_path),
-                "render_vars": {"project_name": project_name, "cluster_role_rule_list": cluster_role_rule_list},
+                "render_vars": {
+                    "project_name": project_name,
+                    "cluster_role_rule_list": cluster_role_rule_list,
+                    "validating_webhooks": validating_webhooks,
+                    "mutating_webhooks": mutating_webhooks,
+                },
             }
+            unusual_create_file(**create_kwargs)
+            continue
         else:
             create_kwargs = {
                 "target_relative_path": target_relative_path,

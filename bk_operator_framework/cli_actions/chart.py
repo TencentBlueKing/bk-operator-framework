@@ -3,6 +3,7 @@ from importlib import import_module
 from bk_operator_framework.cli_actions import echo
 from bk_operator_framework.core import crd, template
 from bk_operator_framework.core.project import project_desc
+from bk_operator_framework.core.webhook import get_webhooks
 
 
 def main(part):
@@ -43,8 +44,10 @@ def main(part):
     for _, resource_versions in resource_versions_dict.items():
         template.create_or_update_chart_crds(resource_versions)
 
-    template.create_or_update_chart_templates(project_desc.project_name, cluster_role_rule_list)
+    validating_webhooks, mutating_webhooks = get_webhooks(project_desc.project_name, project_desc.domain, project_desc)
+
+    template.create_or_update_chart_templates(
+        project_desc.project_name, cluster_role_rule_list, validating_webhooks, mutating_webhooks
+    )
 
     template.create_chart_values(project_desc.project_name)
-
-    project_desc.render()

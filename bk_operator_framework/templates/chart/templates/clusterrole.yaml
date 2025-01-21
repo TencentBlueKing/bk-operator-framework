@@ -1,9 +1,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ "{{" }} include "{{ project_name }}.fullname" . {{ "}}" }}-clusterrole
+  name: {{ include "<< project_name >>.fullname" . }}-clusterrole
   labels:
-    {{ "{{" }}- include "{{ project_name }}.labels" . | nindent 4 {{ "}}" }}
+    {{- include "<< project_name >>.labels" . | nindent 4 }}
 rules:
   # Framework: runtime observation of namespaces & CRDs (addition/deletion).
   - apiGroups: ["apiextensions.k8s.io"]
@@ -13,14 +13,14 @@ rules:
     resources: ["namespaces"]
     verbs: ["list", "watch"]
   # Application: runtime observation and modification of custom resources
-{%- for rule in cluster_role_rule_list %}
-  - apiGroups: {{ rule.apiGroups | tojson }}
-    resources: {{ rule.resources | tojson }}
-    verbs: {{ rule.verbs | tojson  }}
-    {%- if rule.resourceNames %}
-    resourceNames: {{ rule.resourceNames | tojson  }}
-    {%- endif %}
-    {%- if rule.nonResourceURLs %}
-    nonResourceURLs: {{ rule.nonResourceURLs | tojson  }}
-    {%- endif %}
-{%- endfor %}
+<%- for rule in cluster_role_rule_list %>
+  - apiGroups: << rule.apiGroups | toJson >>
+    resources: << rule.resources | toJson >>
+    verbs: << rule.verbs | toJson  >>
+    <%- if rule.resourceNames %>
+    resourceNames: << rule.resourceNames | toJson  >>
+    <%- endif %>
+    <%- if rule.nonResourceURLs %>
+    nonResourceURLs: << rule.nonResourceURLs | toJson  >>
+    <%- endif %>
+<%- endfor %>
