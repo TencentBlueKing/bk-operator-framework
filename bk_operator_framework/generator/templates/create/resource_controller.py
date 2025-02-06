@@ -1,5 +1,5 @@
 import kopf
-from bk_operator_framework.core.schemas import RBACRule
+from bk_operator_framework.generator.schemas import RBACRule
 
 from api.{{group}}.{{version}}.group_version import GROUP_VERSION
 from api.{{group}}.{{version}}.{{singular}}_schemas import (

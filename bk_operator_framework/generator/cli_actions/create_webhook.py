@@ -1,8 +1,8 @@
 import sys
 
-from bk_operator_framework.cli_actions import echo
-from bk_operator_framework.core import template
-from bk_operator_framework.core.project import project_desc
+from bk_operator_framework.generator.cli_actions import echo
+from bk_operator_framework.generator.kits import template
+from bk_operator_framework.generator.project import project
 
 
 def main(
@@ -13,7 +13,9 @@ def main(
         sys.exit(1)
 
     webhooks = {"defaulting": defaulting, "validation": validation}
-    desire_resource = project_desc.create_or_update_resource(
+
+    project.reload_with_desc_file()
+    desire_resource = project.create_or_update_resource(
         group, version, kind, plural=plural, external_api_domain=external_api_domain, webhooks=webhooks
     )
     echo.info("Writing scaffold for you to edit...")
@@ -29,4 +31,4 @@ def main(
         external_api_domain,
         desire_resource.api,
     )
-    project_desc.render()
+    project.render_desc_file()

@@ -7,17 +7,18 @@ from jinja2 import Environment, FileSystemLoader
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString
 
-from bk_operator_framework.cli_actions import echo
+from bk_operator_framework.generator.cli_actions import echo
+from bk_operator_framework.generator.schemas import ProjectResource
 
 TEMPLATE_ROOT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
 WORK_DIR = os.getcwd()
 
 
-def to_json(value):
-    return json.dumps(value)
-
-
-def init_project_dir():
+def init_project_dir() -> None:
+    """
+    Init Project Dir
+    :return:
+    """
     init_template_dir = os.path.join(TEMPLATE_ROOT_DIR, "init")
     for root, dirs, files in os.walk(init_template_dir):
         for file in files:
@@ -27,34 +28,31 @@ def init_project_dir():
             shutil.copy2(src_file, dst_file)
 
 
-def create_file(target_relative_path, template_relative_path, render_vars=None, replace_keyword=None):
-    if replace_keyword:
-        template_file_path = os.path.join(TEMPLATE_ROOT_DIR, template_relative_path)
-        with open(template_file_path, encoding="utf-8") as file:
-            rendered_content = file.read()
-        for k, v in replace_keyword.items():
-            rendered_content = rendered_content.replace(k, v)
-    else:
+def render_file_with_vars(
+    template_relative_path: str, target_relative_path: str, render_vars: dict[str:any] = None, default_env: bool = True
+) -> None:
+    """
+    Render File With jinja2
+    :param template_relative_path:
+    :param target_relative_path:
+    :param render_vars:
+    :param default_env:
+    :return:
+    """
+    if default_env:
         env = Environment(loader=FileSystemLoader(TEMPLATE_ROOT_DIR))
-        env.filters["toJson"] = to_json
-        template = env.get_template(template_relative_path)
-        rendered_content = template.render(**render_vars)
-    target_file = os.path.join(WORK_DIR, target_relative_path)
-    with open(target_file, "w", encoding="utf-8") as file:
-        file.write(rendered_content)
+    else:
+        env = Environment(
+            loader=FileSystemLoader(TEMPLATE_ROOT_DIR),
+            variable_start_string="<<",
+            variable_end_string=">>",
+            block_start_string="<%",
+            block_end_string="%>",
+            comment_start_string="<#",
+            comment_end_string="#>",
+        )
 
-
-def unusual_create_file(target_relative_path, template_relative_path, render_vars):
-    env = Environment(
-        loader=FileSystemLoader(TEMPLATE_ROOT_DIR),
-        variable_start_string="<<",
-        variable_end_string=">>",
-        block_start_string="<%",
-        block_end_string="%>",
-        comment_start_string="<#",
-        comment_end_string="#>",
-    )
-    env.filters["toJson"] = to_json
+    env.filters["toJson"] = lambda x: json.dumps(x)
     template = env.get_template(template_relative_path)
     rendered_content = template.render(**render_vars)
     target_file = os.path.join(WORK_DIR, target_relative_path)
@@ -62,7 +60,35 @@ def unusual_create_file(target_relative_path, template_relative_path, render_var
         file.write(rendered_content)
 
 
+def render_file_with_keywords(template_relative_path: str, target_relative_path: str, keywords: dict[str:str]) -> None:
+    """
+    Render file by replacing keywords
+    :param template_relative_path:
+    :param target_relative_path:
+    :param keywords:
+    :return:
+    """
+    template_file_path = os.path.join(TEMPLATE_ROOT_DIR, template_relative_path)
+    with open(template_file_path, encoding="utf-8") as file:
+        rendered_content = file.read()
+    for k, v in keywords.items():
+        rendered_content = rendered_content.replace(k, v)
+    target_file = os.path.join(WORK_DIR, target_relative_path)
+    with open(target_file, "w", encoding="utf-8") as file:
+        file.write(rendered_content)
+
+
 def create_resource_api(group: str, version: str, kind: str, singular: str, plural: str, domain: str) -> None:
+    """
+    create resource api
+    :param group:
+    :param version:
+    :param kind:
+    :param singular:
+    :param plural:
+    :param domain:
+    :return:
+    """
     echo.info(f"api/{group}/{version}/group_version.py")
     echo.info(f"api/{group}/{version}/{singular}_schemas.py")
 
@@ -82,7 +108,7 @@ def create_resource_api(group: str, version: str, kind: str, singular: str, plur
             "template_relative_path": os.path.join("create", "group_version.py"),
             "render_vars": {"group": f"{group}.{domain}", "version": version},
         }
-        create_file(**group_version_kwargs)
+        render_file_with_vars(**group_version_kwargs)
 
     resource_schemas_path = os.path.join(resource_dir, f"{singular}_schemas.py")
     if os.path.exists(resource_schemas_path):
@@ -94,7 +120,7 @@ def create_resource_api(group: str, version: str, kind: str, singular: str, plur
         "template_relative_path": os.path.join("create", "resource_schemas.py"),
         "render_vars": {"kind": kind, "plural": plural, "singular": singular},
     }
-    create_file(**resource_schemas_kwargs)
+    render_file_with_vars(**resource_schemas_kwargs)
 
 
 def create_resource_controller(
@@ -105,8 +131,20 @@ def create_resource_controller(
     plural: str,
     domain: str,
     external_api_domain: str,
-    resource: bool,
+    api: ProjectResource.Api,
 ):
+    """
+    create resource controller
+    :param group:
+    :param version:
+    :param kind:
+    :param singular:
+    :param plural:
+    :param domain:
+    :param external_api_domain:
+    :param api:
+    :return:
+    """
     echo.info(f"internal/controller/{singular}_controller.py")
 
     controller_dir = os.path.join(WORK_DIR, "internal", "controller")
@@ -120,7 +158,7 @@ def create_resource_controller(
         echo.fata(f"failed to create internal/controller/{singular}_controller.py: file already exists")
         sys.exit(1)
 
-    if external_api_domain is not None or not resource:
+    if external_api_domain is not None or not api:
         template_relative_path = os.path.join("create", "external_resource_controller.py")
     else:
         template_relative_path = os.path.join("create", "resource_controller.py")
@@ -136,7 +174,7 @@ def create_resource_controller(
             "version": version,
         },
     }
-    create_file(**resource_controller_kwargs)
+    render_file_with_vars(**resource_controller_kwargs)
 
     return controller_dir
 
@@ -151,8 +189,22 @@ def create_resource_webhook(
     defaulting: bool,
     validation: bool,
     external_api_domain: str,
-    resource: bool,
+    api: ProjectResource.Api,
 ):
+    """
+
+    :param group:
+    :param version:
+    :param kind:
+    :param singular:
+    :param plural:
+    :param domain:
+    :param defaulting:
+    :param validation:
+    :param external_api_domain:
+    :param api:
+    :return:
+    """
     echo.info(f"internal/webhook/{singular}_webhook.py")
 
     webhook_dir = os.path.join(WORK_DIR, "internal", "webhook")
@@ -166,7 +218,7 @@ def create_resource_webhook(
         echo.fata(f"failed to create internal/webhook/{singular}_webhook.py: file already exists")
         sys.exit(1)
 
-    if external_api_domain is not None or not resource:
+    if external_api_domain is not None or not api:
         template_relative_path = os.path.join("create", "external_resource_webhook.py")
     else:
         template_relative_path = os.path.join("create", "resource_webhook.py")
@@ -184,12 +236,19 @@ def create_resource_webhook(
             "validation": validation,
         },
     }
-    create_file(**resource_webhook_kwargs)
+    render_file_with_vars(**resource_webhook_kwargs)
 
     return webhook_dir
 
 
-def create_or_update_chart_basic_file(project_name, chart_version, chart_app_version):
+def create_or_update_chart_basic_file(project_name: str, chart_version: str, chart_app_version: str) -> str:
+    """
+
+    :param project_name:
+    :param chart_version:
+    :param chart_app_version:
+    :return:
+    """
     chart_dir = os.path.join(WORK_DIR, "chart")
     os.makedirs(chart_dir, exist_ok=True)
 
@@ -201,7 +260,7 @@ def create_or_update_chart_basic_file(project_name, chart_version, chart_app_ver
             "template_relative_path": os.path.join("chart", ".helmignore"),
             "render_vars": {},
         }
-        create_file(**helm_ignore_path_kwargs)
+        render_file_with_vars(**helm_ignore_path_kwargs)
 
     chart_yaml_path = os.path.join(WORK_DIR, "chart", "Chart.yaml")
     echo.info("chart/Chart.yaml")
@@ -211,7 +270,7 @@ def create_or_update_chart_basic_file(project_name, chart_version, chart_app_ver
             "template_relative_path": os.path.join("chart", "Chart.yaml"),
             "render_vars": {"project_name": project_name, "version": chart_version, "appVersion": chart_app_version},
         }
-        create_file(**chart_yaml_kwargs)
+        render_file_with_vars(**chart_yaml_kwargs)
     else:
         yaml = YAML()
 
@@ -227,7 +286,11 @@ def create_or_update_chart_basic_file(project_name, chart_version, chart_app_ver
     return chart_dir
 
 
-def create_or_update_chart_crds(resource_versions):
+def create_or_update_chart_crds(resource_versions: list[ProjectResource]) -> None:
+    """
+    :param resource_versions:
+    :return:
+    """
     crds_dir = os.path.join(WORK_DIR, "chart", "crds")
     os.makedirs(crds_dir, exist_ok=True)
 
@@ -250,7 +313,7 @@ def create_or_update_chart_crds(resource_versions):
         "template_relative_path": os.path.join("chart", "crds", "crd.yaml"),
         "render_vars": {"meta": meta, "resource_versions": resource_versions},
     }
-    create_file(**chart_yaml_kwargs)
+    render_file_with_vars(**chart_yaml_kwargs)
 
     yaml = YAML()
     yaml.indent(mapping=2, sequence=4, offset=2)
@@ -262,16 +325,42 @@ def create_or_update_chart_crds(resource_versions):
         yaml.dump(data, file)
 
 
-def create_or_update_chart_templates(project_name, cluster_role_rule_list, validating_webhooks, mutating_webhooks):
+def create_or_update_chart_templates(
+    project_name: str,
+    cluster_role_rule_list: list,
+    validating_webhooks: list,
+    mutating_webhooks: list,
+    exist_controller: bool,
+    exist_webhook: bool,
+):
+    """
+    :param project_name:
+    :param cluster_role_rule_list:
+    :param validating_webhooks:
+    :param mutating_webhooks:
+    :param exist_controller:
+    :param exist_webhook:
+    :return:
+    """
     chart_templates_dir = os.path.join(WORK_DIR, "chart", "templates")
     os.makedirs(chart_templates_dir, exist_ok=True)
 
     raw_chart_templates_dir = os.path.join(TEMPLATE_ROOT_DIR, "chart", "templates")
 
     for template_relative_path in os.listdir(raw_chart_templates_dir):
+        if not exist_controller and template_relative_path == "controller-deployment.yaml":
+            continue
+        if not exist_webhook and template_relative_path in {
+            "admissionwebhook.yaml",
+            "webhook-deployment.yaml",
+            "webhook-service.yaml",
+        }:
+            continue
+
         target_file_path = os.path.join(chart_templates_dir, template_relative_path)
         target_relative_path = os.path.relpath(target_file_path, WORK_DIR)
         echo.info(target_relative_path)
+
         if template_relative_path in {"clusterrole.yaml", "admissionwebhook.yaml"}:
             create_kwargs = {
                 "target_relative_path": target_relative_path,
@@ -282,25 +371,36 @@ def create_or_update_chart_templates(project_name, cluster_role_rule_list, valid
                     "validating_webhooks": validating_webhooks,
                     "mutating_webhooks": mutating_webhooks,
                 },
+                "default_env": False,
             }
-            unusual_create_file(**create_kwargs)
+            render_file_with_vars(**create_kwargs)
             continue
         else:
             create_kwargs = {
                 "target_relative_path": target_relative_path,
                 "template_relative_path": os.path.join("chart", "templates", template_relative_path),
-                "replace_keyword": {"bof_tmp_project": project_name},
+                "keywords": {"bof_tmp_project": project_name},
             }
-        create_file(**create_kwargs)
+            render_file_with_keywords(**create_kwargs)
 
 
-def create_chart_values(project_name):
+def create_chart_values(project_name: str, exist_controller: bool, exist_webhook: bool) -> None:
+    """
+    :param project_name:
+    :param exist_webhook:
+    :param exist_controller:
+    :return:
+    """
     chart_values_path = os.path.join(WORK_DIR, "chart", "values.yaml")
     if not os.path.exists(chart_values_path):
         echo.info("chart/values.yaml")
         chart_yaml_kwargs = {
             "target_relative_path": os.path.relpath(chart_values_path, WORK_DIR),
             "template_relative_path": os.path.join("chart", "values.yaml"),
-            "render_vars": {"project_name": project_name},
+            "render_vars": {
+                "project_name": project_name,
+                "exist_controller": exist_controller,
+                "exist_webhook": exist_webhook,
+            },
         }
-        create_file(**chart_yaml_kwargs)
+        render_file_with_vars(**chart_yaml_kwargs)

@@ -1,6 +1,5 @@
 import kopf
-
-from bk_operator_framework.core.schemas import RBACRule, GroupVersion
+from bk_operator_framework.generator.schemas import RBACRule, GroupVersion
 
 GROUP_VERSION = GroupVersion(group="{{ (group + '.' + domain).rstrip('.') }}", version="{{ version }}")
 {{ kind | upper }}_PLURAL = "{{ plural }}"

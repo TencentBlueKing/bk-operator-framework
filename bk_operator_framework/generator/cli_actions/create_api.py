@@ -1,8 +1,8 @@
 import sys
 
-from bk_operator_framework.cli_actions import echo
-from bk_operator_framework.core import template
-from bk_operator_framework.core.project import project_desc
+from bk_operator_framework.generator.cli_actions import echo
+from bk_operator_framework.generator.kits import template
+from bk_operator_framework.generator.project import project
 
 
 def main(
@@ -21,7 +21,8 @@ def main(
         )
         sys.exit(1)
 
-    desire_resource = project_desc.create_or_update_resource(
+    project.reload_with_desc_file()
+    desire_resource = project.create_or_update_resource(
         group,
         version,
         kind,
@@ -35,13 +36,18 @@ def main(
     echo.info("Writing scaffold for you to edit...")
     if resource:
         template.create_resource_api(
-            group, version, kind, desire_resource.singular, desire_resource.plural, desire_resource.domain
+            desire_resource.group,
+            desire_resource.version,
+            desire_resource.kind,
+            desire_resource.singular,
+            desire_resource.plural,
+            desire_resource.domain,
         )
     if controller:
         template.create_resource_controller(
-            group,
-            version,
-            kind,
+            desire_resource.group,
+            desire_resource.version,
+            desire_resource.kind,
             desire_resource.singular,
             desire_resource.plural,
             desire_resource.domain,
@@ -49,4 +55,4 @@ def main(
             desire_resource.api,
         )
 
-    project_desc.render()
+    project.render_desc_file()

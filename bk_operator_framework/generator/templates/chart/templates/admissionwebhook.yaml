@@ -35,9 +35,9 @@ webhooks:
   failurePolicy: << webhook.failurePolicy >>
   timeoutSeconds: << webhook.timeoutSeconds >>
   admissionReviewVersions: << webhook.admissionReviewVersions | toJson >>
-  <% if webhook.objectSelector %>
+  <%- if webhook.objectSelector %>
   objectSelector: << webhook.objectSelector | toJson >>
-  <% endif %>
+  <%- endif %>
   clientConfig:
     {{- if .Values.webhook.certAutoGenerate }}
     caBundle: {{ $ca.Cert | b64enc | quote }}

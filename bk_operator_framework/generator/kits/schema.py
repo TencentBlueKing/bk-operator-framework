@@ -1,7 +1,7 @@
 import copy
 import sys
 
-from bk_operator_framework.cli_actions import echo
+from bk_operator_framework.generator.cli_actions import echo
 
 CRD_SCHEMA_NOT_ALLOW_SET_FIELD_LIST = [
     "definitions",

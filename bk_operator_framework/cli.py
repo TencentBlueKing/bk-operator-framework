@@ -1,13 +1,6 @@
 import click
 
-from bk_operator_framework.cli_actions import chart as cli_actions_chart
-from bk_operator_framework.cli_actions import create_api as cli_actions_create_api
-from bk_operator_framework.cli_actions import (
-    create_webhook as cli_actions_create_webhook,
-)
-from bk_operator_framework.cli_actions import init as cli_actions_init
-from bk_operator_framework.cli_actions import version as cli_actions_version
-from bk_operator_framework.cli_actions.echo import CliText
+from bk_operator_framework.generator import cli_actions
 
 
 @click.group(name="bof", epilog='Use "bof [command] --help" for more information about a command.')
@@ -19,14 +12,14 @@ def bof() -> None:
 @bof.command()
 def version() -> None:
     """Print the bof version."""
-    cli_actions_version.main()
+    cli_actions.version.main()
 
 
 @bof.command()
 @click.option("--domain", type=str, default="my.domain", help="Resource Group")
 def init(domain: str) -> None:
     """Initialize a new bof project."""
-    cli_actions_init.main(domain)
+    cli_actions.init.main(domain)
 
 
 @bof.group(
@@ -47,13 +40,13 @@ def create() -> None:
 @click.option(
     "--resource",
     type=bool,
-    prompt=f"{CliText.INFO} Create Resource [y/N]",
+    prompt=f"{cli_actions.CliText.INFO} Create Resource [y/N]",
     help="if set, generate the resource without prompting the user",
 )
 @click.option(
     "--controller",
     type=bool,
-    prompt=f"{CliText.INFO} Create Controller [y/N]",
+    prompt=f"{cli_actions.CliText.INFO} Create Controller [y/N]",
     help="if set, generate the controller without prompting the user",
 )
 @click.option(
@@ -71,7 +64,7 @@ def api(
     resource: bool,
     external_api_domain: str,
 ) -> None:
-    cli_actions_create_api.main(group, version, kind, plural, namespaced, controller, resource, external_api_domain)
+    cli_actions.create_api.main(group, version, kind, plural, namespaced, controller, resource, external_api_domain)
 
 
 @create.command(help="Scaffold a webhook for an API resource")
@@ -89,7 +82,7 @@ def api(
 def webhook(
     group: str, version: str, kind: str, plural: str, defaulting: bool, validation: bool, external_api_domain: str
 ):
-    cli_actions_create_webhook.main(group, version, kind, plural, defaulting, validation, external_api_domain)
+    cli_actions.create_webhook.main(group, version, kind, plural, defaulting, validation, external_api_domain)
 
 
 @bof.command()
@@ -101,7 +94,7 @@ def webhook(
 )
 def chart(part):
     """Generate helm chart for the project."""
-    cli_actions_chart.main(part)
+    cli_actions.chart.main(part)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ image:
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "0.0.1"
-
+{% if exist_controller %}
 controller:
   # Please note that there is only one replica.
   # Keep it so. If there will be two or more operators running in the cluster for the same objects,
@@ -32,7 +32,8 @@ controller:
     limits:
        cpu: "1"
        memory: 2Gi
-
+{% endif -%}
+{% if exist_webhook %}
 webhook:
   replicaCount: 1
   # This is the webhook startup command.
@@ -60,7 +61,7 @@ webhook:
     limits:
        cpu: "1"
        memory: 2Gi
-
+{% endif %}
 # This is for the secretes for pulling an image from a private repository.
 # More information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from bk_operator_framework.core.schemas import AdditionalPrinterColumn
+from bk_operator_framework.generator.schemas import AdditionalPrinterColumn
 
 # {{ plural }} is the plural form of {{ kind }}.
 # Edit {{ singular }}_schemas.py and project_desc.yaml to update it.

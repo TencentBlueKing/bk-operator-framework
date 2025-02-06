@@ -3,12 +3,12 @@ import sys
 
 import yaml
 
-from bk_operator_framework.cli_actions import echo
-from bk_operator_framework.core import template
-from bk_operator_framework.core.schemas import ProjectChart, ProjectResource
+from bk_operator_framework.generator.cli_actions import echo
+from bk_operator_framework.generator.kits import template
+from bk_operator_framework.generator.schemas import ProjectChart, ProjectResource
 
 
-class ProjectDesc:
+class Project:
 
     def __init__(self):
         self.domain = None
@@ -27,17 +27,16 @@ class ProjectDesc:
         """
         return os.path.exists(self.file_path)
 
-    def init_basc_info(self, domain):
+    def init_basc_info(self, domain) -> None:
         """
-        init project desc
+        Init Project Basc Info
         :param domain:
         :return:
         """
         self.project_name = os.path.basename(self.work_dir).lower().replace("_", "-")
         self.domain = domain
-        self.render()
 
-    def reload(self):
+    def reload_with_desc_file(self) -> None:
         """
         reload with the project_desc.yaml
         :return:
@@ -55,7 +54,7 @@ class ProjectDesc:
         self.resources = [ProjectResource(**r) for r in data.get("resources", [])]
         self.chart = data.get("chart") and ProjectChart(**data.get("chart"))
 
-    def render(self):
+    def render_desc_file(self) -> None:
         """
         Render Project Info to project_desc.yaml
         :return:
@@ -66,7 +65,7 @@ class ProjectDesc:
             "render_vars": {"project_desc": self},
         }
 
-        template.create_file(**kwargs)
+        template.render_file_with_vars(**kwargs)
         echo.info("project_desc.yaml")
 
     def create_or_update_resource(
@@ -82,9 +81,18 @@ class ProjectDesc:
         external_api_domain: str = None,
     ) -> ProjectResource:
         """
-        Create Or update resources
+        create or update project resources
+        :param group:
+        :param version:
+        :param kind:
+        :param plural:
+        :param resource:
+        :param controller:
+        :param namespaced:
+        :param webhooks:
+        :param external_api_domain:
+        :return:
         """
-        self.reload()
         singular = kind.lower()
         if plural is None:
             plural = f"{singular}s"
@@ -136,4 +144,4 @@ class ProjectDesc:
             self.chart.bump_app_version()
 
 
-project_desc = ProjectDesc()
+project = Project()

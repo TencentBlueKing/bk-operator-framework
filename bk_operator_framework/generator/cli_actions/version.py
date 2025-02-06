@@ -1,4 +1,4 @@
-from bk_operator_framework.cli_actions import echo
+from bk_operator_framework.generator.cli_actions import echo
 
 __version__ = "1.0.0"
 
