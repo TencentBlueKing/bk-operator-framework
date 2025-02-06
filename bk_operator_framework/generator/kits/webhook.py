@@ -10,7 +10,7 @@ from kopf._core.intents import registries
 from bk_operator_framework.kits.module import list_all_modules
 
 
-def _mock_webhook_server():
+def _mock_webhook_server() -> None:
     module = import_module("internal.webhook")
     module_dir = module.__path__[0]
     sys.path_importer_cache.pop(module_dir, None)
@@ -24,7 +24,7 @@ def _mock_webhook_server():
         settings.admission.server = kopf.WebhookServer()
 
 
-def list_project_webhooks(project_name, domain, project_desc):
+def list_project_webhooks(project_name: str, domain: str, project_desc: str) -> None:
     _mock_webhook_server()
     registry = registries.get_default_registry()
     all_handlers = registry._webhooks.get_all_handlers()
