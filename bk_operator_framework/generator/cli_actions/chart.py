@@ -48,7 +48,9 @@ def main(part):
     for _, resource_versions in resource_versions_dict.items():
         template.create_or_update_chart_crds(resource_versions)
 
-    validating_webhooks, mutating_webhooks = list_project_webhooks(project.project_name, project.domain, project)
+    validating_webhooks, mutating_webhooks = [], []
+    if exist_webhook:
+        validating_webhooks, mutating_webhooks = list_project_webhooks(project.project_name, project.domain, project)
 
     template.create_or_update_chart_templates(
         project.project_name,
