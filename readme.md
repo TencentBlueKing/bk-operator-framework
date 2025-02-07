@@ -9,9 +9,9 @@
 
 Bof是一个使用 [自定义资源定义(CRD)](https://kubernetes.io/docs/tasks/access-kubernetes-api/extend-api-custom-resource-definitions) 来构建Kubernetes API的框架。
 
-类似于*Django*和*Flask*等Web开发框架，Bof提高了开发速度，并减少了开发人员在使用Python语言快速构建和发布 Kubernetes API 时所需管理的复杂性。它基于构建核心Kubernetes API的规范技术，提供了简单的抽象，减少了样板代码和繁琐工作。
+类似于Django和Flask等Web开发框架，Bof提高了开发速度，并减少了开发人员在使用Python语言快速构建和发布 Kubernetes API 时所需管理的复杂性。它基于构建核心Kubernetes API的规范技术，提供了简单的抽象，减少了样板代码和繁琐工作。
 
-Bof并不是一个供*复制粘贴*的示例，而是提供了强大的库和工具，从头开始简化构建和发布 Kubernetes API 的过程。它提供了一个插件架构，使用户能够利用可选的辅助工具和功能。
+Bof并不是一个供复制粘贴的示例，而是提供了强大的库和工具，从头开始简化构建和发布 Kubernetes API 的过程。它提供了一个插件架构，使用户能够利用可选的辅助工具和功能。
 
 Bof基于 [kopf](https://github.com/nolar/kopf.git) 和 [pydantic](https://github.com/pydantic/pydantic.git) 库开发。
 
