@@ -7,3 +7,6 @@ PyYAML==6.0.2
 ruamel.yaml==0.18.6
 kubernetes==31.0.0
 semver==3.0.2
+
+# setup up
+setuptools==75.8.0

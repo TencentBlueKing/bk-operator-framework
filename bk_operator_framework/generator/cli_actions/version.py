@@ -1,7 +1,9 @@
+import importlib.metadata
+
 from bk_operator_framework.generator.cli_actions import echo
 
-__version__ = "1.0.0"
 
-
-def main():
-    echo.info(f"bof version is {__version__}")
+def main() -> None:
+    name, *_ = __name__.split(".")
+    version = importlib.metadata.version(name)
+    echo.info(f"bof version is {version}")

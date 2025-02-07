@@ -2,5 +2,8 @@
 .idea/
 venv/
 __pycache__/
+*.egg-info/
+build/
+dist/
 dev_test/
 dev_templates/
