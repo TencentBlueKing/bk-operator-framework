@@ -19,6 +19,7 @@ from kopf._cogs.structs.reviews import WebhookClientConfig
 from kopf._core.engines.admission import build_webhooks
 from kopf._core.intents import registries
 
+from bk_operator_framework.generator.project import Project
 from bk_operator_framework.kits.module import list_all_modules
 
 
@@ -36,7 +37,7 @@ def _mock_webhook_server() -> None:
         settings.admission.server = kopf.WebhookServer()
 
 
-def list_project_webhooks(project_name: str, domain: str, project_desc: str) -> None:
+def list_project_webhooks(project: Project) -> ([], []):
     _mock_webhook_server()
     registry = registries.get_default_registry()
     all_handlers = registry._webhooks.get_all_handlers()
@@ -44,13 +45,13 @@ def list_project_webhooks(project_name: str, domain: str, project_desc: str) -> 
 
     webhook_resources = [
         Resource(plural=r.plural, group=f"{r.group}.{r.domain}".rstrip("."), version=r.version)
-        for r in project_desc.resources
+        for r in project.resources
     ]
     mutating_webhooks = build_webhooks(
         mutating_handlers,
         resources=webhook_resources,
-        name_suffix=f"{project_name}.{domain}",
-        client_config=WebhookClientConfig(url=None, service=None),
+        name_suffix=f"{project.project_name}.{project.domain}",
+        client_config=WebhookClientConfig(url="", service=None),
         persistent_only=False,
     )
 
@@ -59,8 +60,8 @@ def list_project_webhooks(project_name: str, domain: str, project_desc: str) -> 
     validating_webhooks = build_webhooks(
         validating_handlers,
         resources=webhook_resources,
-        name_suffix=f"{project_name}.{domain}",
-        client_config=WebhookClientConfig(url=None, service=None),
+        name_suffix=f"{project.project_name}.{project.domain}",
+        client_config=WebhookClientConfig(url="", service=None),
         persistent_only=False,
     )
 

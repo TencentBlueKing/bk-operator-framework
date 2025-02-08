@@ -10,9 +10,14 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 """
 
+import os
+import sys
+
 import click
 
 from bk_operator_framework.generator import cli_actions
+
+sys.path.append(os.getcwd())
 
 
 @click.group(name="bof", epilog='Use "bof [command] --help" for more information about a command.')

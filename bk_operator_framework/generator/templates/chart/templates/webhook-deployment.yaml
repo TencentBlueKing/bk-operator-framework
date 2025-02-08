@@ -41,7 +41,7 @@ spec:
               value: {{ .value | quote }}
             {{- end }}
           volumeMounts:
-            - mountPath: /workspace/etc/certs
+            - mountPath: /workspace/certs
               name: cert
               readOnly: true
       volumes:

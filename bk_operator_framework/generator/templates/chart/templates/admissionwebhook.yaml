@@ -48,14 +48,14 @@ webhooks:
       name: {{ include "<< project_name >>.fullname" . }}-webhook-service
       namespace: {{ .Release.Namespace }}
       port: 443
-      path: /<< webhook.name.split('.')[0] >>
+      path: << webhook.clientConfig.url >>
   rules:
 <%- for rule in webhook.rules %>
   - operations: << rule.operations | tojson >>
     apiGroups: << rule.apiGroups | tojson >>
     apiVersions: << rule.apiVersions | tojson >>
     resources: << rule.resources | tojson >>
-    scope: << rule.scope >>
+    scope: "<< rule.scope >>"
 <%- endfor %>
 <%- endfor %>
 <%- endif %>
@@ -86,14 +86,14 @@ webhooks:
       name: {{ include "<< project_name >>.fullname" . }}-webhook-service
       namespace: {{ .Release.Namespace }}
       port: 443
-      path: /<< webhook.name.split('.')[0] >>
+      path: << webhook.clientConfig.url >>
   rules:
 <%- for rule in webhook.rules %>
   - operations: << rule.operations | toJson >>
     apiGroups: << rule.apiGroups | toJson >>
     apiVersions: << rule.apiVersions | toJson >>
     resources: << rule.resources | toJson >>
-    scope: << rule.scope >>
+    scope: "<< rule.scope >>"
 <%- endfor %>
 <%- endfor %>
 <%- endif %>
