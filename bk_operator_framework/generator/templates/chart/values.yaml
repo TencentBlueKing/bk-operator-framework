@@ -1,0 +1,83 @@
+# Default values for {{ project_name }}.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: {{ project_name }}
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "0.0.1"
+{% if exist_controller %}
+controller:
+  # Please note that there is only one replica.
+  # Keep it so. If there will be two or more operators running in the cluster for the same objects,
+  # they will collide with each other and the consequences are unpredictable.
+  # In case of pod restarts, only one pod should be running at a time too.
+  replicaCount: 1
+  # This is the controller startup command.
+  # More information can be found here: https://kopf.readthedocs.io/en/stable/cli/
+  command: ["python", "main.py", "run", "controller", "-A"]
+  # Environment variables of controller
+  env: []
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: 1Gi
+    limits:
+       cpu: "1"
+       memory: 2Gi
+{% endif -%}
+{% if exist_webhook %}
+webhook:
+  replicaCount: 1
+  # This is the webhook startup command.
+  # More information can be found here: https://kopf.readthedocs.io/en/stable/cli/
+  command: ["python", "main.py", "run", "webhook", "-A"]
+  # Webhook server listening port
+  port: 8443
+  # Environment variables of webhook
+  env: []
+  # Whether to automatically generate a certificate for the webhook
+  certAutoGenerate: true
+  # If you need to manually set the certificate,
+  # Set the base64-encoded values of caCert, tlsCert and tlsKey, and change certAutoGenerate to false.
+  caCert:
+  tlsCert:
+  tlsKey:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: 1Gi
+    limits:
+       cpu: "1"
+       memory: 2Gi
+{% endif %}
+# This is for the secretes for pulling an image from a private repository.
+# More information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""

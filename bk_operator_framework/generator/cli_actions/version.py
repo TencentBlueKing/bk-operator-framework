@@ -9,3 +9,13 @@ Unless required by applicable law or agreed to in writing, software distributed 
 an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
+
+import importlib.metadata
+
+from bk_operator_framework.generator.cli_actions import echo
+
+
+def main() -> None:
+    name, *_ = __name__.split(".")
+    version = importlib.metadata.version(name)
+    echo.info(f"bof version is {version}")

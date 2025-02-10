@@ -1,7 +1,9 @@
+.DS_Store
 .idea/
+venv/
 __pycache__/
 *.egg-info/
+build/
 dist/
-.cert/
-helm_charts/
-test_cr.yaml
+dev_test/
+dev_templates/

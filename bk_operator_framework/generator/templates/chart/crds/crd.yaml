@@ -1,0 +1,40 @@
+apiVersion: apiextensions.k8s.io/{{ meta.crdVersion }}
+kind: CustomResourceDefinition
+metadata:
+  name: {{ meta.name }}
+spec:
+  group: {{ meta.group }}
+  names:
+    plural: {{ meta.plural }}
+    singular: {{ meta.singular }}
+    kind: {{ meta.kind }}
+  scope: {{ 'Namespaced' if meta.namespaced else 'Cluster' }}
+  versions:
+{%- for rv in resource_versions %}
+  - name: {{ rv.resource.version }}
+    served: {{ 'true' if rv.resource.api.served else 'false' }}
+    storage: {{ 'true' if rv.resource.api.storage else 'false' }}
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec: {}
+          status: {}
+{%- if rv.additional_printer_columns %}
+    additionalPrinterColumns:
+{%- endif -%}
+{% for apc in rv.additional_printer_columns %}
+      - name: "{{ apc.name }}"
+        type: "{{ apc.type }}"
+        jsonPath:  "{{ apc.jsonPath }}"
+        {%- if apc.description %}
+        description: "{{ apc.description }}"
+        {%- endif %}
+        {%- if apc.priority %}
+        priority: {{ apc.priority }}
+        {%- endif %}
+        {%- if apc.format %}
+        format: "{{ apc.format }}"
+        {%- endif %}
+{%- endfor %}
+{%- endfor %}

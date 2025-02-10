@@ -9,3 +9,23 @@ Unless required by applicable law or agreed to in writing, software distributed 
 an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
+
+import click
+
+
+class CliText:
+    INFO = click.style("INFO", fg="blue")
+    FATA = click.style("FATA", fg="red")
+    WARN = click.style("WARN", fg="yellow")
+
+
+def info(message):
+    click.echo(f"{CliText.INFO} {message}")
+
+
+def warn(message):
+    click.echo(f"{CliText.WARN} {message}")
+
+
+def fata(message):
+    click.echo(f"{CliText.FATA} {message}")

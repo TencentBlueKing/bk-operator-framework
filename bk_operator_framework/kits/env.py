@@ -9,3 +9,26 @@ Unless required by applicable law or agreed to in writing, software distributed 
 an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
+
+import os
+
+from kubernetes import config
+
+
+def running_in_cluster() -> bool:
+    """
+    Is the current operating environment in the k8s cluster?
+    :return:
+    """
+    return "KUBERNETES_SERVICE_HOST" in os.environ
+
+
+def load_auth_and_cluster_info() -> None:
+    """
+    Loads authentication and cluster information
+    :return:
+    """
+    if running_in_cluster():
+        config.load_incluster_config()
+    else:
+        config.load_kube_config()

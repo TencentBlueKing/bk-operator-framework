@@ -1,30 +1,18 @@
-class K8sResourceScope:
-    Cluster = "Cluster"
-    Namespaced = "Namespaced"
+"""
+Tencent is pleased to support the open source community by making 蓝鲸智云PaaS平台社区版 (BlueKing PaaS Community
+Edition) available.
+Copyright (C) 2023 THL A29 Limited, a Tencent company. All rights reserved.
+Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://opensource.org/licenses/MIT
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+"""
+
+from enum import Enum
 
 
-class HandlerType:
-    Create = "create"  # 当 CR 被创建时触发
-    Update = "update"  # 当 CR 被更新时触发
-    Delete = "delete"  # 当 CR 被删除时触发
-    Event = "event"  # 当 CR 生成 K8s 事件时触发
-    Field = "field"  # 当 CR 指定字段发生更改时触发
-
-    Timer = "timer"  # 在指定的时间间隔后触发
-    Startup = "startup"  # 当Operator Server 启动时触发
-    Cleanup = "cleanup"  # 当 Operator Server 停止时触发
-    Resume = "resume"  # 当Operator Server启动后，对所有现有 CR 触发
-
-    Mutate = "mutate"  # 当 CR 创建或更新资源之前触发,用于修改请求中的对象（如标签、注释或规格）
-    Validate = "validate"  # 当 CR 创建或更新之前触发，用于验证请求中的对象是否符合预期条件和规则
-
-
-class OperatorRuntimeState:
-    # 正在执行
-    RUNNING = "Running"
-    # 执行成功
-    SUCCESS = "Succeeded"
-    # 执行失败
-    FAILED = "Failed"
-    # 等待执行
-    WAITING = "Waiting"
+class ServerType(Enum):
+    Controller = "controller"
+    Webhook = "webhook"
