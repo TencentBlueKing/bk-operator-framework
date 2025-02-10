@@ -41,6 +41,10 @@ Open Source Software Licensed Under the Apache License, Version 2.0:
 Copyright 2014 The Kubernetes Authors.
 https://pypi.org/project/kubernetes
 
+2. kubebuilder
+Copyright 2017 The Kubernetes Authors.
+https://github.com/kubernetes-sigs/kubebuilder/
+
 
 
 Terms of the Apache License, Version 2.0:
