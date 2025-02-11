@@ -116,7 +116,9 @@ kubeconfig file (i.e. whatever cluster `kubectl cluster-info` shows).
 
 Install the CRDs into the cluster:
 ```bash
+# create or update the project chart
 bof chart
+
 kubectl apply -f chart/crds/guestbooks.apps.power.dev.yaml
 ```
 
@@ -135,10 +137,10 @@ When your controller is ready to be packaged and tested in other clusters.
 docker build . -t <some-registry>/<project-name>:tag
 docker push <some-registry>/<project-name>:tag
 
-# update the project chart and deploy it
-helm chart
+# create or update the project chart
+bof chart
 
-# define the mirror address in the helm values file
+# modify chart.values.yaml and deploy
 helm install {project_name} chart/
 ```
 
